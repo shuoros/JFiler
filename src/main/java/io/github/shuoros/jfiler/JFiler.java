@@ -4,18 +4,18 @@ import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class JFiler {
 
-    private Folder location;
+    private Folder currentlocation;
 
     public JFiler(){
     }
 
     public JFiler(String location) throws IOException {
-        this.location = new Folder(Paths.get(location));
+        this.currentlocation = new Folder(Paths.get(location));
     }
 
     public File getFile(String location) throws IOException {
@@ -24,6 +24,10 @@ public class JFiler {
 
     public Folder getFolder(String location) throws IOException {
         return new Folder(Paths.get(location));
+    }
+
+    public List<File> getMe(){
+        return currentlocation.getContains();
     }
 
 }
