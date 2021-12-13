@@ -10,24 +10,18 @@ public class File extends java.io.File {
 
     private Type type;
     private Path location;
-    private Long size;
-    private Date created;
-    private Date lastModified;
+    private Date createdDate;
+    private Date lastModifiedDate;
 
-    public File(Path location) throws IOException {
+    public File(Path location) {
         super(location.toString());
-        BasicFileAttributes attr = Files.readAttributes(location, BasicFileAttributes.class);
-        if (super.isFile()) {
-            this.type = Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1));
-        }
+        extractFileAttributes(location);
         this.location = location;
-        this.size = super.length();
-        this.created = new Date(attr.creationTime().toMillis());
-        this.lastModified = new Date(attr.lastModifiedTime().toMillis());
+        this.type = super.isFile() ? Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1)) : Type.Folder;
     }
 
-    public String getName() {
-        return super.getName();
+    public File open(Path location) {
+        return new File(location);
     }
 
     public Type getType() {
@@ -42,36 +36,20 @@ public class File extends java.io.File {
         return location;
     }
 
-    public File setLocation(Path location) {
+    public void setLocation(Path location) {
         this.location = location;
-        return this;
     }
 
     public Long getSize() {
-        return size;
+        return super.length();
     }
 
-    public File setSize(Long size) {
-        this.size = size;
-        return this;
+    public Date getCreatedDate() {
+        return createdDate;
     }
 
-    public Date getCreated() {
-        return created;
-    }
-
-    public File setCreated(Date created) {
-        this.created = created;
-        return this;
-    }
-
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    public File setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-        return this;
+    public Date getLastModifiedDate() {
+        return lastModifiedDate;
     }
 
     @Override
@@ -80,10 +58,26 @@ public class File extends java.io.File {
                 "name='" + super.getName() + '\'' +
                 ", type=" + type +
                 ", location=" + location +
-                ", size=" + size +
-                ", created=" + created +
-                ", lastModified=" + lastModified +
+                ", size=" + super.length() + " bytes " +
+                ", created=" + createdDate +
+                ", lastModified=" + lastModifiedDate +
                 '}';
+    }
+
+    private void extractFileAttributes(Path location) {
+        BasicFileAttributes attr = getBasicFileAttributesClass(location);
+        this.createdDate = new Date(attr.creationTime().toMillis());
+        this.lastModifiedDate = new Date(attr.lastModifiedTime().toMillis());
+    }
+
+    private BasicFileAttributes getBasicFileAttributesClass(Path location) {
+        BasicFileAttributes attr = null;
+        try {
+            attr = Files.readAttributes(location, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return attr;
     }
 
 }
