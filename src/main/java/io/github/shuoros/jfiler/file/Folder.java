@@ -18,6 +18,10 @@ public class Folder extends File {
         size = calculateFolderSize(this);
     }
 
+    public Folder open(Path location) {
+        return new Folder(location);
+    }
+
     public List<File> getContains() {
         return contains;
     }
