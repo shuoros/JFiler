@@ -1,6 +1,5 @@
 package io.github.shuoros.jfiler.file;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,27 +9,45 @@ import java.util.Objects;
 
 public class Folder extends File {
 
-    private List<File> contains = new ArrayList<>();
+    private final List<File> contains = new ArrayList<>();
+    private final Long size;
 
-    public Folder(Path location) throws IOException {
+    public Folder(Path location) {
         super(location);
-        this.setType(Type.Folder);
-        Arrays.stream(Objects.requireNonNull(super.list())).forEach(i -> {
-            i = location.toString() + '/' + i;
-            try {
-                contains.add(new java.io.File(i).isFile() ? new File(Paths.get(i)) : new Folder(Paths.get(i)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        extractContainedFilesAndFolders(location);
+        size = calculateFolderSize(this);
     }
 
     public List<File> getContains() {
         return contains;
     }
 
-    public Folder setContains(List<File> contains) {
-        this.contains = contains;
-        return this;
+    @Override
+    public Long getSize() {
+        return size;
     }
+
+    @Override
+    public String toString() {
+        return "Folder{" +
+                "name='" + super.getName() + '\'' +
+                ", location=" + super.getLocation() +
+                ", size=" + this.size + " bytes " +
+                ", created=" + super.getCreatedDate() +
+                ", lastModified=" + super.getLastModifiedDate() +
+                '}';
+    }
+
+    private void extractContainedFilesAndFolders(Path location) {
+        Arrays.stream(Objects.requireNonNull(super.list())).forEach(i -> {
+            i = location.toString() + '/' + i;
+            contains.add(new java.io.File(i).isFile() ? new File(Paths.get(i)) : new Folder(Paths.get(i)));
+        });
+    }
+
+    private Long calculateFolderSize(Folder folder) {
+        return folder.getContains().stream()//
+                .mapToLong(file -> file.isFile() ? file.getSize() : calculateFolderSize((Folder) file)).sum();
+    }
+
 }
