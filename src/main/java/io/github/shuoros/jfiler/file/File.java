@@ -36,8 +36,8 @@ public class File extends java.io.File {
         return location;
     }
 
-    public void setLocation(Path location) {
-        this.location = location;
+    public Folder getParentFolder(){
+        return new Folder(this.location.getParent());
     }
 
     public Long getSize() {
