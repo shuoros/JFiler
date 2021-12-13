@@ -18,7 +18,7 @@ public class Folder extends File {
         size = calculateFolderSize(this);
     }
 
-    public Folder open(Path location) {
+    public static Folder open(Path location) {
         return new Folder(location);
     }
 

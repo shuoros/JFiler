@@ -20,7 +20,7 @@ public class File extends java.io.File {
         this.type = super.isFile() ? Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1)) : Type.Folder;
     }
 
-    public File open(Path location) {
+    public static File open(Path location) {
         return new File(location);
     }
 
