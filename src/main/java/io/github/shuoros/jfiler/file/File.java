@@ -53,6 +53,11 @@ public class File extends java.io.File {
     }
 
     @Override
+    public boolean equals(Object o){
+        return this.location.equals(((File) o).getLocation());
+    }
+
+    @Override
     public String toString() {
         return "File{" +
                 "name='" + super.getName() + '\'' +
