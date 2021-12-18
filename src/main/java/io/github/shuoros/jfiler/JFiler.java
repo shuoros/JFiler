@@ -110,6 +110,12 @@ public class JFiler {
         delete(source);
     }
 
+    public void cut(File source) {
+        this.clipBoard = source;
+        this.cut = true;
+        this.copy = false;
+    }
+
     public void delete(String destination) throws IOException {
         java.io.File file = new java.io.File(destination);
         if (!file.delete())
