@@ -7,7 +7,6 @@ import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 import java.util.Stack;
 
 public class JFiler {
@@ -87,6 +86,13 @@ public class JFiler {
         this.currentLocation = this.currentLocation.getParentFolder();
     }
 
+    public void copyTo(String source, String destination) throws IOException {
+        createNewFile(destination);
+        InputStream is = new FileInputStream(source);
+        OutputStream os = new FileOutputStream(destination);
+        writeFromInputStreamToOutputStream(is, os);
+    }
+
     public void createNewFile(String destination) throws IOException {
         if (isFileExist(destination))
             throw new FileAlreadyExistsException(destination);
@@ -96,6 +102,17 @@ public class JFiler {
 
     public boolean isFileExist(String destination) {
         return new java.io.File(destination).exists();
+    }
+
+    private void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = is.read(buffer)) > 0) {
+            os.write(buffer, 0, length);
+        }
+
+        is.close();
+        os.close();
     }
 
     private boolean canNotItGoBackFromThisFolder(Folder location) {
