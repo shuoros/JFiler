@@ -94,6 +94,11 @@ public class JFiler {
         writeFromInputStreamToOutputStream(is, os);
     }
 
+    public void cutTo(String source, String destination) throws IOException {
+        copyTo(source, destination);
+        delete(source);
+    }
+
     public void delete(String destination) throws IOException {
         java.io.File file = new java.io.File(destination);
         if (!file.delete())
