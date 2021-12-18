@@ -12,6 +12,9 @@ import java.util.Stack;
 
 public class JFiler {
 
+    private File clipBoard;
+    private boolean copy;
+    private boolean cut;
     private Folder currentLocation;
     private final Boolean lock;
     private final Folder homeLocation;
@@ -30,6 +33,8 @@ public class JFiler {
         this.homeLocation = new Folder(Paths.get(location));
         this.currentLocation = this.homeLocation;
         this.lock = lock;
+        this.copy = false;
+        this.cut = false;
     }
 
     public static JFiler open(String location) {
@@ -92,6 +97,12 @@ public class JFiler {
         InputStream is = new FileInputStream(source);
         OutputStream os = new FileOutputStream(destination);
         writeFromInputStreamToOutputStream(is, os);
+    }
+
+    public void copy(String source) {
+        this.clipBoard = new File(Paths.get(source));
+        this.copy = true;
+        this.cut = false;
     }
 
     public void cutTo(String source, String destination) throws IOException {
