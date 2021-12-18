@@ -116,6 +116,18 @@ public class JFiler {
         this.copy = false;
     }
 
+    public void paste(String destination) throws IOException {
+        if(this.clipBoard == null)
+            if(this.copy)
+                copyTo(this.clipBoard.getPath(), destination);
+            else if(this.cut)
+                cutTo(this.clipBoard.getPath(), destination);
+
+        this.clipBoard = null;
+        this.copy = false;
+        this.cut = false;
+    }
+
     public void delete(String destination) throws IOException {
         java.io.File file = new java.io.File(destination);
         if (!file.delete())
