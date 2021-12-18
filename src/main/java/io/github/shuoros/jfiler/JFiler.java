@@ -7,6 +7,7 @@ import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 public class JFiler {
@@ -93,6 +94,14 @@ public class JFiler {
         writeFromInputStreamToOutputStream(is, os);
     }
 
+    public void delete(String destination) throws IOException {
+        java.io.File file = new java.io.File(destination);
+        if (!file.delete())
+            throw new IOException(//
+                    "Failed to delete the file because: " +//
+                            getReasonForFileDeletionFailureInPlainEnglish(file));
+    }
+
     public void createNewFile(String destination) throws IOException {
         if (isFileExist(destination))
             throw new FileAlreadyExistsException(destination);
@@ -102,6 +111,14 @@ public class JFiler {
 
     public boolean isFileExist(String destination) {
         return new java.io.File(destination).exists();
+    }
+
+    private boolean canNotItGoBackFromThisFolder(Folder location) {
+        return location.equals(this.homeLocation);
+    }
+
+    private boolean canNotItGoBackToThisFolder(Folder location) {
+        return !location.getLocation().startsWith(this.homeLocation.getLocation());
     }
 
     private void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
@@ -115,12 +132,17 @@ public class JFiler {
         os.close();
     }
 
-    private boolean canNotItGoBackFromThisFolder(Folder location) {
-        return location.equals(this.homeLocation);
-    }
-
-    private boolean canNotItGoBackToThisFolder(Folder location) {
-        return !location.getLocation().startsWith(this.homeLocation.getLocation());
+    private String getReasonForFileDeletionFailureInPlainEnglish(java.io.File file) {
+        try {
+            if (!file.exists())
+                return "It doesn't exist in the first place.";
+            else if (file.isDirectory() && Objects.requireNonNull(file.list()).length > 0)
+                return "It's a directory and it's not empty.";
+            else
+                return "Somebody else has it open, we don't have write permissions, or somebody stole my disk.";
+        } catch (SecurityException e) {
+            return "We're sandboxed and don't have filesystem access.";
+        }
     }
 
     private static class HomeIsLockedException extends RuntimeException {
