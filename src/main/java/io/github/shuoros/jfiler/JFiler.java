@@ -3,15 +3,17 @@ package io.github.shuoros.jfiler;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 public class JFiler {
 
-    private Boolean lock;
     private Folder currentLocation;
+    private final Boolean lock;
     private final Folder homeLocation;
     private final Stack<Folder> frontLocation = new Stack<>();
     private final Stack<Folder> rearLocation = new Stack<>();
@@ -46,16 +48,16 @@ public class JFiler {
         return currentLocation.getContains();
     }
 
-    public File getFile(String location) {
+    public static File getFile(String location) {
         return new File(Paths.get(location));
     }
 
-    public Folder getFolder(String location) {
+    public static Folder getFolder(String location) {
         return new Folder(Paths.get(location));
     }
 
     public void openFolder(String location) {
-        if (lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
+        if (this.lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
             throw new HomeIsLockedException();
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
@@ -65,7 +67,7 @@ public class JFiler {
     public void goBackward() {
         if (this.rearLocation.isEmpty())
             throw new NoBackwardHistoryException();
-        if (lock && canNotItGoBackToThisFolder(this.rearLocation.peek()))
+        if (this.lock && canNotItGoBackToThisFolder(this.rearLocation.peek()))
             throw new HomeIsLockedException();
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.rearLocation.pop();
@@ -79,10 +81,21 @@ public class JFiler {
     }
 
     public void goUp() {
-        if (lock && canNotItGoBackFromThisFolder(this.currentLocation))
+        if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
             throw new HomeIsLockedException();
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.currentLocation.getParentFolder();
+    }
+
+    public void createNewFile(String destination) throws IOException {
+        if (isFileExist(destination))
+            throw new FileAlreadyExistsException(destination);
+
+        File.create(Paths.get(destination));
+    }
+
+    public boolean isFileExist(String destination) {
+        return new java.io.File(destination).exists();
     }
 
     private boolean canNotItGoBackFromThisFolder(Folder location) {
