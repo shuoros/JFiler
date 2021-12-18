@@ -1,6 +1,7 @@
 package io.github.shuoros.jfiler.file;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -24,6 +25,16 @@ public class File extends java.io.File {
         return new File(location);
     }
 
+    public static File create(Path location) throws IOException {
+        File file = null;
+        if (new java.io.File(location.toString()).createNewFile())
+            file = new File(location);
+        else
+            throw new FileAlreadyExistsException(location.toString());
+        return file;
+    }
+
+
     public Type getType() {
         return type;
     }
@@ -36,7 +47,7 @@ public class File extends java.io.File {
         return location;
     }
 
-    public Folder getParentFolder(){
+    public Folder getParentFolder() {
         return new Folder(this.location.getParent());
     }
 
@@ -53,7 +64,7 @@ public class File extends java.io.File {
     }
 
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         return this.location.equals(((File) o).getLocation());
     }
 
