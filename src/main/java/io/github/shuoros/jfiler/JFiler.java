@@ -92,17 +92,8 @@ public class JFiler {
         this.currentLocation = this.currentLocation.getParentFolder();
     }
 
-    public void copyTo(String source, String destination) throws IOException {
-        createNewFile(destination);
-        InputStream is = new FileInputStream(source);
-        OutputStream os = new FileOutputStream(destination);
-        writeFromInputStreamToOutputStream(is, os);
-    }
-
-    public void copy(String source) {
-        this.clipBoard = new File(Paths.get(source));
-        this.copy = true;
-        this.cut = false;
+    public void rename(String destination, String newName) throws IOException {
+        cutTo(destination, newDestination(destination, newName));
     }
 
     public void cutTo(String source, String destination) throws IOException {
@@ -114,6 +105,19 @@ public class JFiler {
         this.clipBoard = source;
         this.cut = true;
         this.copy = false;
+    }
+
+    public void copyTo(String source, String destination) throws IOException {
+        createNewFile(destination);
+        InputStream is = new FileInputStream(source);
+        OutputStream os = new FileOutputStream(destination);
+        writeFromInputStreamToOutputStream(is, os);
+    }
+
+    public void copy(String source) {
+        this.clipBoard = new File(Paths.get(source));
+        this.copy = true;
+        this.cut = false;
     }
 
     public void paste(String destination) throws IOException {
@@ -177,6 +181,18 @@ public class JFiler {
         } catch (SecurityException e) {
             return "We're sandboxed and don't have filesystem access.";
         }
+    }
+
+    private String newDestination(String destination, String newName) {
+        destination = destination.replaceAll("\\\\", "/");
+        StringBuilder newDestination = new StringBuilder();
+        for (String directory : destination.split("/"))
+            if (directory.equals(destination.split("/")[destination.split("/").length - 1]))
+                newDestination.append(newName);
+            else
+                newDestination.append(directory).append("/");
+
+        return newDestination.toString();
     }
 
     private static class HomeIsLockedException extends RuntimeException {
