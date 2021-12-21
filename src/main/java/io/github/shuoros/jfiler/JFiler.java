@@ -96,21 +96,23 @@ public class JFiler {
     }
 
     public void hide(String destination) throws IOException {
-        if(new java.io.File(destination).isHidden())
+        if (new java.io.File(destination).isHidden())
             throw new FileIsAlreadyHideException(destination);
 
-        if (SystemOS.isUnix())
+        if (SystemOS.isUnix() || SystemOS.isMac())
             hideFileInUnix(destination);
         else if (SystemOS.isWindows())
             hideFileInWindows(destination);
     }
 
-    private void hideFileInUnix(String destination) throws IOException {
-        rename(destination, "." + destination.split("/")[destination.split("/").length - 1]);
-    }
+    public void unHide(String destination) throws IOException {
+        if (!new java.io.File(destination).isHidden())
+            throw new FileIsAlreadyUnHideException(destination);
 
-    private void hideFileInWindows(String destination) throws IOException {
-        Files.setAttribute(Paths.get(destination), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
+        if (SystemOS.isUnix() || SystemOS.isMac())
+            unHideFileInUnix(destination);
+        else if (SystemOS.isWindows())
+            unHideFileInWindows(destination);
     }
 
     public void rename(String destination, String newName) throws IOException {
@@ -216,6 +218,23 @@ public class JFiler {
         return newDestination.toString();
     }
 
+    private void hideFileInUnix(String destination) throws IOException {
+        rename(destination, "." + destination.split("/")[destination.split("/").length - 1]);
+    }
+
+    private void hideFileInWindows(String destination) throws IOException {
+        Files.setAttribute(Paths.get(destination), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
+    }
+
+    private void unHideFileInUnix(String destination) throws IOException {
+        rename(destination, destination.split("/")[destination.split("/").length - 1]//
+                .replaceFirst(".", ""));
+    }
+
+    private void unHideFileInWindows(String destination) throws IOException {
+        Files.setAttribute(Paths.get(destination), "dos:hidden", false, LinkOption.NOFOLLOW_LINKS);
+    }
+
     private static class HomeIsLockedException extends RuntimeException {
 
         public HomeIsLockedException() {
@@ -243,6 +262,14 @@ public class JFiler {
     private static class FileIsAlreadyHideException extends RuntimeException {
 
         public FileIsAlreadyHideException(String destination) {
+            super(destination);
+        }
+
+    }
+
+    private static class FileIsAlreadyUnHideException extends RuntimeException {
+
+        public FileIsAlreadyUnHideException(String destination) {
             super(destination);
         }
 
