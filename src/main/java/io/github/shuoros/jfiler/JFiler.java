@@ -2,9 +2,12 @@ package io.github.shuoros.jfiler;
 
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
+import io.github.shuoros.jfiler.util.SystemOS;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
@@ -12,14 +15,14 @@ import java.util.Stack;
 
 public class JFiler {
 
-    private File clipBoard;
-    private boolean copy;
-    private boolean cut;
-    private Folder currentLocation;
     private final Boolean lock;
     private final Folder homeLocation;
     private final Stack<Folder> frontLocation = new Stack<>();
     private final Stack<Folder> rearLocation = new Stack<>();
+    private boolean copy;
+    private boolean cut;
+    private File clipBoard;
+    private Folder currentLocation;
 
     public JFiler() {
         this("/", false);
@@ -90,6 +93,24 @@ public class JFiler {
             throw new HomeIsLockedException();
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.currentLocation.getParentFolder();
+    }
+
+    public void hide(String destination) throws IOException {
+        if(new java.io.File(destination).isHidden())
+            throw new FileIsAlreadyHideException(destination);
+
+        if (SystemOS.isUnix())
+            hideFileInUnix(destination);
+        else if (SystemOS.isWindows())
+            hideFileInWindows(destination);
+    }
+
+    private void hideFileInUnix(String destination) throws IOException {
+        rename(destination, "." + destination.split("/")[destination.split("/").length - 1]);
+    }
+
+    private void hideFileInWindows(String destination) throws IOException {
+        Files.setAttribute(Paths.get(destination), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
     }
 
     public void rename(String destination, String newName) throws IOException {
@@ -215,6 +236,14 @@ public class JFiler {
 
         public NoBackwardHistoryException() {
             super("You can't go backward, There is no history of rear folders!");
+        }
+
+    }
+
+    private static class FileIsAlreadyHideException extends RuntimeException {
+
+        public FileIsAlreadyHideException(String destination) {
+            super(destination);
         }
 
     }
