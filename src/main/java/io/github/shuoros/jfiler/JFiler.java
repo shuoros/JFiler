@@ -45,20 +45,20 @@ public class JFiler {
         return new JFiler(location, true);
     }
 
-    public Folder getCurrentLocation() {
-        return currentLocation;
-    }
-
-    public List<File> getList() {
-        return currentLocation.getContains();
-    }
-
     public static File getFile(String location) {
         return new File(Paths.get(location));
     }
 
     public static Folder getFolder(String location) {
         return new Folder(Paths.get(location));
+    }
+
+    public Folder getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public List<File> getList() {
+        return currentLocation.getContains();
     }
 
     public void openFolder(String location) {
@@ -117,10 +117,10 @@ public class JFiler {
     }
 
     public void paste(String destination) throws IOException {
-        if(this.clipBoard == null)
-            if(this.copy)
+        if (this.clipBoard == null)
+            if (this.copy)
                 copyTo(this.clipBoard.getPath(), destination);
-            else if(this.cut)
+            else if (this.cut)
                 cutTo(this.clipBoard.getPath(), destination);
 
         this.clipBoard = null;
