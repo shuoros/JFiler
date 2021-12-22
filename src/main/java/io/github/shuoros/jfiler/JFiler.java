@@ -1,5 +1,6 @@
 package io.github.shuoros.jfiler;
 
+import io.github.shuoros.jfiler.exception.HomeIsLockedException;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 import io.github.shuoros.jfiler.util.SystemOS;
@@ -307,14 +308,6 @@ public class JFiler {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(java.io.File::delete);
-    }
-
-    private static class HomeIsLockedException extends RuntimeException {
-
-        public HomeIsLockedException() {
-            super("You can't go back any further from this location, Because the home is locked!");
-        }
-
     }
 
     private static class NoForwardHistoryException extends RuntimeException {
