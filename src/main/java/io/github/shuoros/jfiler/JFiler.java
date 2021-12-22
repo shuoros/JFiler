@@ -1,6 +1,7 @@
 package io.github.shuoros.jfiler;
 
 import io.github.shuoros.jfiler.exception.HomeIsLockedException;
+import io.github.shuoros.jfiler.exception.NoForwardHistoryException;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 import io.github.shuoros.jfiler.util.SystemOS;
@@ -308,14 +309,6 @@ public class JFiler {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(java.io.File::delete);
-    }
-
-    private static class NoForwardHistoryException extends RuntimeException {
-
-        public NoForwardHistoryException() {
-            super("You can't go forward, There is no history of front folders!");
-        }
-
     }
 
     private static class NoBackwardHistoryException extends RuntimeException {
