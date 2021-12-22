@@ -1,5 +1,6 @@
 package io.github.shuoros.jfiler;
 
+import io.github.shuoros.jfiler.exception.FileIsAlreadyHideException;
 import io.github.shuoros.jfiler.exception.HomeIsLockedException;
 import io.github.shuoros.jfiler.exception.NoBackwardHistoryException;
 import io.github.shuoros.jfiler.exception.NoForwardHistoryException;
@@ -310,14 +311,6 @@ public class JFiler {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(java.io.File::delete);
-    }
-
-    private static class FileIsAlreadyHideException extends RuntimeException {
-
-        public FileIsAlreadyHideException(String destination) {
-            super(destination);
-        }
-
     }
 
     private static class FileIsAlreadyUnHideException extends RuntimeException {
