@@ -5,13 +5,14 @@ import io.github.shuoros.jfiler.file.Folder;
 import io.github.shuoros.jfiler.util.SystemOS;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class JFiler {
 
@@ -124,17 +125,34 @@ public class JFiler {
         delete(source);
     }
 
-    public void cut(File source) {
-        this.clipBoard = source;
+    public void cut(String source) {
+        this.clipBoard = new File(Paths.get(source));
         this.cut = true;
         this.copy = false;
     }
 
     public void copyTo(String source, String destination) throws IOException {
+        if (new java.io.File(source).isFile())
+            copyFile(source, destination);
+        else
+            copyFolder(source, destination);
+    }
+
+    private void copyFile(String source, String destination) throws IOException {
         createNewFile(destination);
         InputStream is = new FileInputStream(source);
         OutputStream os = new FileOutputStream(destination);
         writeFromInputStreamToOutputStream(is, os);
+    }
+
+    private void copyFolder(String source, String destination) throws IOException {
+        createNewFolder(destination);
+        for (String file : Objects.requireNonNull(new java.io.File(source).list())) {
+            if (new java.io.File(source + "/" + file).isFile())
+                copyFile(source + "/" + file, destination + "/" + file);
+            else
+                copyFolder(source + "/" + file, destination + "/" + file);
+        }
     }
 
     public void copy(String source) {
@@ -155,12 +173,35 @@ public class JFiler {
         this.cut = false;
     }
 
+    public void zip(List<String> destinations, String zipFileDestination) throws IOException {
+        if (zipFileDestination.endsWith(".zip"))
+            zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
+
+        createNewFolder(zipFileDestination);
+        for (String destination : destinations)
+            copyTo(destination,//
+                     zipFileDestination + "/" + destination.split("/")[destination.split("/").length -1]);
+
+        compress(zipFileDestination);
+        delete(zipFileDestination);
+    }
+
     public void delete(String destination) throws IOException {
         java.io.File file = new java.io.File(destination);
-        if (!file.delete())
-            throw new IOException(//
-                    "Failed to delete the file because: " +//
-                            getReasonForFileDeletionFailureInPlainEnglish(file));
+        if (file.isFile()) {
+            if (!file.delete())
+                throw new IOException(//
+                        "Failed to delete the file because: " +//
+                                getReasonForFileDeletionFailureInPlainEnglish(file));
+        } else
+            deleteFolder(destination);
+    }
+
+    private void deleteFolder(String destination) throws IOException {
+        Files.walk(Paths.get(destination))
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(java.io.File::delete);
     }
 
     public void createNewFile(String destination) throws IOException {
@@ -168,6 +209,13 @@ public class JFiler {
             throw new FileAlreadyExistsException(destination);
 
         File.create(Paths.get(destination));
+    }
+
+    public void createNewFolder(String destination) throws IOException {
+        if (isFileExist(destination))
+            throw new FileAlreadyExistsException(destination);
+
+        Folder.create(Paths.get(destination));
     }
 
     public boolean isFileExist(String destination) {
@@ -233,6 +281,32 @@ public class JFiler {
 
     private void unHideFileInWindows(String destination) throws IOException {
         Files.setAttribute(Paths.get(destination), "dos:hidden", false, LinkOption.NOFOLLOW_LINKS);
+    }
+
+    private void compress(String destination) {
+        final Path sourceDir = Paths.get(destination);
+        String zipFileName = destination.concat(".zip");
+        try {
+            final ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFileName));
+            Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+                    try {
+                        Path targetFile = sourceDir.relativize(file);
+                        outputStream.putNextEntry(new ZipEntry(targetFile.toString()));
+                        byte[] bytes = Files.readAllBytes(file);
+                        outputStream.write(bytes, 0, bytes.length);
+                        outputStream.closeEntry();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static class HomeIsLockedException extends RuntimeException {
