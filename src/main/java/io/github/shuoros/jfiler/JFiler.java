@@ -1,9 +1,6 @@
 package io.github.shuoros.jfiler;
 
-import io.github.shuoros.jfiler.exception.FileIsAlreadyHideException;
-import io.github.shuoros.jfiler.exception.HomeIsLockedException;
-import io.github.shuoros.jfiler.exception.NoBackwardHistoryException;
-import io.github.shuoros.jfiler.exception.NoForwardHistoryException;
+import io.github.shuoros.jfiler.exception.*;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 import io.github.shuoros.jfiler.util.SystemOS;
@@ -112,7 +109,7 @@ public class JFiler {
 
     public void unHide(String destination) throws IOException {
         if (!new java.io.File(destination).isHidden())
-            throw new FileIsAlreadyUnHideException(destination);
+            throw new FileIsAlreadyVisibleException(destination);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
             unHideFileInUnix(destination);
@@ -311,14 +308,6 @@ public class JFiler {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(java.io.File::delete);
-    }
-
-    private static class FileIsAlreadyUnHideException extends RuntimeException {
-
-        public FileIsAlreadyUnHideException(String destination) {
-            super(destination);
-        }
-
     }
 
 }
