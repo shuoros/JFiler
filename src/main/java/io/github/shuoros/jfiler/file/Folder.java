@@ -1,5 +1,7 @@
 package io.github.shuoros.jfiler.file;
 
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,6 +22,15 @@ public class Folder extends File {
 
     public static Folder open(Path location) {
         return new Folder(location);
+    }
+
+    public static Folder create(Path location) throws IOException {
+        Folder folder = null;
+        if (new java.io.File(location.toString()).mkdir())
+            folder = new Folder(location);
+        else
+            throw new FileAlreadyExistsException(location.toString());
+        return folder;
     }
 
     public List<File> getContains() {
