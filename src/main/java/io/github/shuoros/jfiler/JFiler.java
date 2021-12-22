@@ -138,23 +138,6 @@ public class JFiler {
             copyFolder(source, destination);
     }
 
-    private void copyFile(String source, String destination) throws IOException {
-        createNewFile(destination);
-        InputStream is = new FileInputStream(source);
-        OutputStream os = new FileOutputStream(destination);
-        writeFromInputStreamToOutputStream(is, os);
-    }
-
-    private void copyFolder(String source, String destination) throws IOException {
-        createNewFolder(destination);
-        for (String file : Objects.requireNonNull(new java.io.File(source).list())) {
-            if (new java.io.File(source + "/" + file).isFile())
-                copyFile(source + "/" + file, destination + "/" + file);
-            else
-                copyFolder(source + "/" + file, destination + "/" + file);
-        }
-    }
-
     public void copy(String source) {
         this.clipBoard = new File(Paths.get(source));
         this.copy = true;
@@ -195,13 +178,6 @@ public class JFiler {
                                 getReasonForFileDeletionFailureInPlainEnglish(file));
         } else
             deleteFolder(destination);
-    }
-
-    private void deleteFolder(String destination) throws IOException {
-        Files.walk(Paths.get(destination))
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(java.io.File::delete);
     }
 
     public void createNewFile(String destination) throws IOException {
@@ -307,6 +283,30 @@ public class JFiler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void copyFolder(String source, String destination) throws IOException {
+        createNewFolder(destination);
+        for (String file : Objects.requireNonNull(new java.io.File(source).list())) {
+            if (new java.io.File(source + "/" + file).isFile())
+                copyFile(source + "/" + file, destination + "/" + file);
+            else
+                copyFolder(source + "/" + file, destination + "/" + file);
+        }
+    }
+
+    private void copyFile(String source, String destination) throws IOException {
+        createNewFile(destination);
+        InputStream is = new FileInputStream(source);
+        OutputStream os = new FileOutputStream(destination);
+        writeFromInputStreamToOutputStream(is, os);
+    }
+
+    private void deleteFolder(String destination) throws IOException {
+        Files.walk(Paths.get(destination))
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(java.io.File::delete);
     }
 
     private static class HomeIsLockedException extends RuntimeException {
