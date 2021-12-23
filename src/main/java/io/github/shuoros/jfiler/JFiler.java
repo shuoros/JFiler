@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class JFiler {
@@ -170,6 +171,16 @@ public class JFiler {
         delete(zipFileDestination);
     }
 
+    public void unzip(String source, String destination) throws IOException {
+        if(!source.endsWith(".zip"))
+            throw new NotAZipFileToExtractException(source);
+
+        if(!new java.io.File(destination).exists())
+            createNewFolder(destination);
+
+        deCompress(source, destination);
+    }
+
     public void delete(String destination) throws IOException {
         java.io.File file = new java.io.File(destination);
         if (file.isFile()) {
@@ -284,6 +295,50 @@ public class JFiler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void deCompress(String source, String destination) throws IOException {
+        java.io.File destDir = new java.io.File(destination);
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(source));
+        ZipEntry zipEntry = zis.getNextEntry();
+        while (zipEntry != null) {
+            java.io.File newFile = extractFileFromZip(destDir, zipEntry);
+            if (zipEntry.isDirectory()) {
+                if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                    throw new IOException("Failed to create directory " + newFile);
+                }
+            } else {
+                // fix for Windows-created archives
+                java.io.File parent = newFile.getParentFile();
+                if (!parent.isDirectory() && !parent.mkdirs()) {
+                    throw new IOException("Failed to create directory " + parent);
+                }
+
+                FileOutputStream fos = new FileOutputStream(newFile);
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+                fos.close();
+            }
+            zipEntry = zis.getNextEntry();
+        }
+        zis.closeEntry();
+        zis.close();
+    }
+
+    private java.io.File extractFileFromZip(java.io.File destinationDir, ZipEntry zipEntry) throws IOException {
+        java.io.File destFile = new java.io.File(destinationDir, zipEntry.getName());
+
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
+
+        if (!destFilePath.startsWith(destDirPath + java.io.File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return destFile;
     }
 
     private void copyFolder(String source, String destination) throws IOException {
