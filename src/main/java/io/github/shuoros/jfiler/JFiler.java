@@ -8,10 +8,8 @@ import io.github.shuoros.jfiler.util.SystemOS;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -165,20 +163,40 @@ public class JFiler {
         createNewFolder(zipFileDestination);
         for (String destination : destinations)
             copyTo(destination,//
-                     zipFileDestination + "/" + destination.split("/")[destination.split("/").length -1]);
+                    zipFileDestination + "/" + destination.split("/")[destination.split("/").length - 1]);
 
         compress(zipFileDestination);
         delete(zipFileDestination);
     }
 
     public void unzip(String source, String destination) throws IOException {
-        if(!source.endsWith(".zip"))
+        if (!source.endsWith(".zip"))
             throw new NotAZipFileToExtractException(source);
 
-        if(!new java.io.File(destination).exists())
+        if (!new java.io.File(destination).exists())
             createNewFolder(destination);
 
         deCompress(source, destination);
+    }
+
+    public List<String> search(String regex, String destination) {
+        if (new java.io.File(destination).isFile())
+            throw new CannotSearchInFileException(destination);
+
+        return recursionSearch(regex, destination);
+    }
+
+    private List<String> recursionSearch(String regex, String destination) {
+        Folder folder = new Folder(Paths.get(destination));
+        List<String> foundedFiles = new ArrayList<>();
+        Pattern p = Pattern.compile(regex);
+        for(File file : folder.getContains()){
+            if(p.matcher(file.getName()).find())
+                foundedFiles.add(file.getPath());
+            if(file.isDirectory())
+                foundedFiles.addAll(recursionSearch(regex, file.getPath()));
+        }
+        return foundedFiles;
     }
 
     public void delete(String destination) throws IOException {
