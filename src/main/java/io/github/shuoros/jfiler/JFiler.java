@@ -57,11 +57,15 @@ public class JFiler {
         return this.lock;
     }
 
+    public Folder getHomeLocation() {
+        return homeLocation;
+    }
+
     public Folder getCurrentLocation() {
         return currentLocation;
     }
 
-    public Folder getRearLocation(){
+    public Folder getRearLocation() {
         return rearLocation.peek();
     }
 
