@@ -25,10 +25,6 @@ public class JFiler {
     private File clipBoard;
     private Folder currentLocation;
 
-    public JFiler() {
-        this("/", false);
-    }
-
     public JFiler(String location) {
         this(location, false);
     }
