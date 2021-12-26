@@ -61,6 +61,10 @@ public class JFiler {
         return currentLocation;
     }
 
+    public Folder getRearLocation(){
+        return rearLocation.peek();
+    }
+
     public List<File> getList() {
         return currentLocation.getContains();
     }
