@@ -84,8 +84,6 @@ public class JFiler {
     public void goBackward() {
         if (this.rearLocation.isEmpty())
             throw new NoBackwardHistoryException();
-        if (this.lock && canNotItGoBackToThisFolder(this.rearLocation.peek()))
-            throw new HomeIsLockedException();
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.rearLocation.pop();
     }
