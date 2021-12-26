@@ -53,6 +53,10 @@ public class JFiler {
         return new Folder(Paths.get(location));
     }
 
+    public boolean isHomeLocked() {
+        return this.lock;
+    }
+
     public Folder getCurrentLocation() {
         return currentLocation;
     }
@@ -186,10 +190,10 @@ public class JFiler {
         Folder folder = new Folder(Paths.get(destination));
         List<String> foundedFiles = new ArrayList<>();
         Pattern p = Pattern.compile(regex);
-        for(File file : folder.getContains()){
-            if(p.matcher(file.getName()).find())
+        for (File file : folder.getContains()) {
+            if (p.matcher(file.getName()).find())
                 foundedFiles.add(file.getPath());
-            if(file.isDirectory())
+            if (file.isDirectory())
                 foundedFiles.addAll(recursionSearch(regex, file.getPath()));
         }
         return foundedFiles;
