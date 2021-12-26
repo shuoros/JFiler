@@ -16,7 +16,8 @@ public class File extends java.io.File {
 
     public File(Path location) {
         super(location.toString());
-        extractFileAttributes(location);
+        if(exists())
+            extractFileAttributes(location);
         this.location = location;
         this.type = super.isFile() ? Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1)) : Type.Folder;
     }
