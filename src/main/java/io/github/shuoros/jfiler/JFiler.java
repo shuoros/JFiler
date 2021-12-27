@@ -77,6 +77,14 @@ public class JFiler {
         return clipBoard;
     }
 
+    public String getPasteOperation(){
+        if(copy)
+            return "copy";
+        if(cut)
+            return "cut";
+        return "NaN";
+    }
+
     public List<File> getList() {
         return currentLocation.getContains();
     }
