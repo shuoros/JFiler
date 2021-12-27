@@ -168,7 +168,7 @@ public class JFiler {
     }
 
     public void paste(String destination) throws IOException {
-        if (this.clipBoard == null)
+        if (this.clipBoard != null)
             if (this.copy)
                 copyTo(this.clipBoard.getPath(), destination);
             else if (this.cut)
