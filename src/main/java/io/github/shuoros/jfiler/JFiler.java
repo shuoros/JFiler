@@ -73,6 +73,10 @@ public class JFiler {
         return frontLocation.peek();
     }
 
+    public File getClipBoard(){
+        return clipBoard;
+    }
+
     public List<File> getList() {
         return currentLocation.getContains();
     }
@@ -91,6 +95,7 @@ public class JFiler {
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.rearLocation.pop();
     }
+
 
     public void goForward() {
         if (this.frontLocation.isEmpty())
