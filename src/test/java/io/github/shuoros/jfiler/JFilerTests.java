@@ -5,8 +5,6 @@ import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
@@ -14,14 +12,14 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class JFilerTest {
+public class JFilerTests {
 
     private static String resource;
     private JFiler jFiler;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
-        resource = Paths.get(Objects.requireNonNull(JFilerTest.class.getResource("/")).toURI()).toFile().getPath();
+        resource = Paths.get(Objects.requireNonNull(JFilerTests.class.getResource("/")).toURI()).toFile().getPath();
     }
 
     @BeforeEach
