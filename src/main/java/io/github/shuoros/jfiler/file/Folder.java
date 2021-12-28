@@ -16,7 +16,7 @@ public class Folder extends File {
 
     public Folder(Path location) {
         super(location);
-        if(super.exists())
+        if (super.exists())
             extractContainedFilesAndFolders(location);
         size = calculateFolderSize(this);
     }
