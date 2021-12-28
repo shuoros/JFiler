@@ -1,6 +1,5 @@
 package io.github.shuoros.jfiler.file;
 
-import io.github.shuoros.jfiler.JFiler;
 import io.github.shuoros.jfiler.JFilerTests;
 import org.junit.jupiter.api.*;
 
@@ -15,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FileTests {
 
     private static String resource;
-    private File file;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
@@ -36,7 +34,7 @@ public class FileTests {
 
     @Test
     @Order(2)
-    public void whenFileExistsCreateFactoryMustThrowFileAlreadyExistsException() {
+    public void whenAFileExistsCreateFactoryMustThrowFileAlreadyExistsException() {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
 
