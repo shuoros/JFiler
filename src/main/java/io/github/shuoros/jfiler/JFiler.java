@@ -30,7 +30,7 @@ public class JFiler {
     }
 
     public JFiler(String location, Boolean lock) {
-        this.homeLocation = new Folder(Paths.get(location));
+        this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
         this.currentLocation = this.homeLocation;
         this.lock = lock;
         this.copy = false;
@@ -90,6 +90,8 @@ public class JFiler {
     }
 
     public void openFolder(String location) {
+        location = pathSeparatorCorrector(location);
+
         if (this.lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
             throw new HomeIsLockedException();
         this.frontLocation.clear();
@@ -120,6 +122,8 @@ public class JFiler {
     }
 
     public void hide(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         if (new java.io.File(destination).isHidden())
             throw new FileIsAlreadyHideException(destination);
 
@@ -130,6 +134,8 @@ public class JFiler {
     }
 
     public void unHide(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         if (!new java.io.File(destination).isHidden())
             throw new FileIsAlreadyVisibleException(destination);
 
@@ -149,12 +155,17 @@ public class JFiler {
     }
 
     public void cut(String source) {
+        source = pathSeparatorCorrector(source);
+
         this.clipBoard = new File(Paths.get(source));
         this.cut = true;
         this.copy = false;
     }
 
     public void copyTo(String source, String destination) throws IOException {
+        source = pathSeparatorCorrector(source);
+        destination = pathSeparatorCorrector(destination);
+
         if (new java.io.File(source).isFile())
             copyFile(source, destination);
         else
@@ -162,12 +173,16 @@ public class JFiler {
     }
 
     public void copy(String source) {
+        source = pathSeparatorCorrector(source);
+
         this.clipBoard = new File(Paths.get(source));
         this.copy = true;
         this.cut = false;
     }
 
     public void paste(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         if (this.clipBoard != null)
             if (this.copy)
                 copyTo(this.clipBoard.getPath(), destination);
@@ -180,19 +195,26 @@ public class JFiler {
     }
 
     public void zip(List<String> destinations, String zipFileDestination) throws IOException {
+        zipFileDestination = pathSeparatorCorrector(zipFileDestination);
+
         if (zipFileDestination.endsWith(".zip"))
             zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
 
         createNewFolder(zipFileDestination);
-        for (String destination : destinations)
+        for (String destination : destinations) {
+            destination = pathSeparatorCorrector(destination);
             copyTo(destination,//
                     zipFileDestination + "/" + destination.split("/")[destination.split("/").length - 1]);
+        }
 
         compress(zipFileDestination);
         delete(zipFileDestination);
     }
 
     public void unzip(String source, String destination) throws IOException {
+        source = pathSeparatorCorrector(source);
+        destination = pathSeparatorCorrector(destination);
+
         if (!source.endsWith(".zip"))
             throw new NotAZipFileToExtractException(source);
 
@@ -203,26 +225,17 @@ public class JFiler {
     }
 
     public List<String> search(String regex, String destination) {
+        destination = pathSeparatorCorrector(destination);
+
         if (new java.io.File(destination).isFile())
             throw new CannotSearchInFileException(destination);
 
         return recursionSearch(regex, destination);
     }
 
-    private List<String> recursionSearch(String regex, String destination) {
-        Folder folder = new Folder(Paths.get(destination));
-        List<String> foundedFiles = new ArrayList<>();
-        Pattern p = Pattern.compile(regex);
-        for (File file : folder.getContains()) {
-            if (p.matcher(file.getName()).find())
-                foundedFiles.add(file.getPath());
-            if (file.isDirectory())
-                foundedFiles.addAll(recursionSearch(regex, file.getPath()));
-        }
-        return foundedFiles;
-    }
-
     public void delete(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         java.io.File file = new java.io.File(destination);
         if (file.isFile()) {
             if (!file.delete())
@@ -234,6 +247,8 @@ public class JFiler {
     }
 
     public void createNewFile(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         if (isFileExist(destination))
             throw new FileAlreadyExistsException(destination);
 
@@ -241,6 +256,8 @@ public class JFiler {
     }
 
     public void createNewFolder(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
         if (isFileExist(destination))
             throw new FileAlreadyExistsException(destination);
 
@@ -248,11 +265,15 @@ public class JFiler {
     }
 
     public boolean isFileExist(String destination) {
-        return new java.io.File(destination).exists();
+        return new java.io.File(pathSeparatorCorrector(destination)).exists();
     }
 
     private boolean canNotItGoBackFromThisFolder(Folder location) {
         return location.equals(this.homeLocation);
+    }
+
+    private String pathSeparatorCorrector(String path){
+        return path.replaceAll("\\\\", "/");
     }
 
     private boolean canNotItGoBackToThisFolder(Folder location) {
@@ -404,6 +425,19 @@ public class JFiler {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(java.io.File::delete);
+    }
+
+    private List<String> recursionSearch(String regex, String destination) {
+        Folder folder = new Folder(Paths.get(destination));
+        List<String> foundedFiles = new ArrayList<>();
+        Pattern p = Pattern.compile(regex);
+        for (File file : folder.getContains()) {
+            if (p.matcher(file.getName()).find())
+                foundedFiles.add(file.getPath());
+            if (file.isDirectory())
+                foundedFiles.addAll(recursionSearch(regex, file.getPath()));
+        }
+        return foundedFiles;
     }
 
 }
