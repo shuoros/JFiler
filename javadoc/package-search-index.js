@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"io.github.shuoros.jfiler"},{"l":"io.github.shuoros.jfiler.exception"},{"l":"io.github.shuoros.jfiler.file"},{"l":"io.github.shuoros.jfiler.util"}]

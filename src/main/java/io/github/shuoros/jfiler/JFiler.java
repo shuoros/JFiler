@@ -14,6 +14,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * JFiller is a library for managing files in Java which easily and with the least line of code gives you
+ * the ability to manage files like moving through folders and directories, reading files and folders information,
+ * creating new files or folders, making changes to files and folders such as renaming or hiding them, deleting files
+ * and folders, searching for files or folders by regex and compressing files and folders or extracting them from zip files.
+ *
+ * @author Soroush Shemshadi
+ * @version 1.0.0
+ * @see <a href="https://github.com/shuoros/JFiler">JFiler</a>
+ * @since 1.0.0
+ */
 public class JFiler {
 
     private final Boolean lock;
@@ -25,10 +36,21 @@ public class JFiler {
     private File clipBoard;
     private Folder currentLocation;
 
+    /**
+     * Creates a JFiler instance on the given location.
+     *
+     * @param location Home of JFiler instance which going to be created.
+     */
     public JFiler(String location) {
         this(location, false);
     }
 
+    /**
+     * Constructs a JFiler instance on the given location with lock.
+     *
+     * @param location Home of JFiler instance which going to be created.
+     * @param lock     A locked home means you only have access to subfiles and subfolders of home.
+     */
     public JFiler(String location, Boolean lock) {
         this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
         this.currentLocation = this.homeLocation;
@@ -37,58 +59,137 @@ public class JFiler {
         this.cut = false;
     }
 
+    /**
+     * Creates a new instance of JFiler for you.
+     *
+     * @param location Home of JFiler instance which going to be created.
+     * @return A new instance of JFiler in your desired location.
+     */
     public static JFiler open(String location) {
         return new JFiler(location);
     }
 
+    /**
+     * Creates a new instance of JFiler for you with locked home.
+     * It means that you only have access to subfiles and subfolders of home.
+     *
+     * @param location Home of JFiler instance which going to be created.
+     * @return A new instance of JFiler in your desired location with locked home.
+     */
     public static JFiler openInLockedHome(String location) {
         return new JFiler(location, true);
     }
 
+    /**
+     * Creates a new instance of {@link io.github.shuoros.jfiler.file.File} in your desired location.
+     *
+     * @param location Location of file you want to get its instance.
+     * @return New instance of File in your desired location.
+     */
     public static File getFile(String location) {
         return new File(Paths.get(location));
     }
 
+    /**
+     * Creates a new instance of {@link io.github.shuoros.jfiler.file.Folder} in your desired location.
+     *
+     * @param location Location of folder you want to get its instance.
+     * @return New instance of Folder in your desired location.
+     */
     public static Folder getFolder(String location) {
         return new Folder(Paths.get(location));
     }
 
+    /**
+     * If home is locked or not.
+     *
+     * @return true if home locked and false if home not locked.
+     */
     public boolean isHomeLocked() {
         return this.lock;
     }
 
+    /**
+     * Returns an instance of {@link io.github.shuoros.jfiler.file.Folder} which represent the home.
+     *
+     * @return An instance of Folder which represent the home.
+     */
     public Folder getHomeLocation() {
         return homeLocation;
     }
 
+    /**
+     * Returns an instance of {@link io.github.shuoros.jfiler.file.Folder}
+     * which represent the current location of JFiler.
+     *
+     * @return An instance of Folder which represent the current location of JFiler.
+     */
     public Folder getCurrentLocation() {
         return currentLocation;
     }
 
+    /**
+     * Returns an instance of {@link io.github.shuoros.jfiler.file.Folder}
+     * which represent the rear location of JFiler.
+     *
+     * @return An instance of Folder which represent the rear location of JFiler.
+     */
     public Folder getRearLocation() {
         return rearLocation.peek();
     }
 
+    /**
+     * Returns an instance of {@link io.github.shuoros.jfiler.file.Folder}
+     * which represent the front location of JFiler.
+     *
+     * @return An instance of Folder which represent the front location of JFiler.
+     */
     public Folder getFrontLocation() {
         return frontLocation.peek();
     }
 
-    public File getClipBoard(){
+    /**
+     * Returns an instance of {@link io.github.shuoros.jfiler.file.File} which represent
+     * the current file or folder in clipboard.
+     *
+     * @return An instance of File which represent the current file or folder in clipboard.
+     */
+    public File getClipBoard() {
         return clipBoard;
     }
 
-    public String getPasteOperation(){
-        if(copy)
+    /**
+     * Returns a string that indicates the operation that the track is about to perform.
+     * It can be a copy or a cut or nothing.
+     *
+     * @return A string that indicates the operation that the track is about to perform.
+     * It can be a copy or a cut or NaN.
+     */
+    public String getPasteOperation() {
+        if (copy)
             return "copy";
-        if(cut)
+        if (cut)
             return "cut";
         return "NaN";
     }
 
+    /**
+     * Returns list of all files and folders in current location of JFiler.
+     *
+     * @return List of all files and folders in current location of JFiler.
+     */
     public List<File> getList() {
         return currentLocation.getContains();
     }
 
+    /**
+     * Opens a folder in the given location in JFiler's current location. The current location will be added
+     * to rear location and the folder you give to function will be set in current location. If home is locked
+     * and the given location is outside of home it throws
+     * {@link io.github.shuoros.jfiler.exception.HomeIsLockedException}.
+     *
+     * @param location Location of desired folder which you want to open.
+     */
     public void openFolder(String location) {
         location = pathSeparatorCorrector(location);
 
@@ -99,6 +200,11 @@ public class JFiler {
         this.currentLocation = new Folder(Paths.get(location));
     }
 
+    /**
+     * Goes backward to the last rear location of JFiler. The current location will be added to front location and
+     * last rear location will be set in current location. If there is no backward history
+     * it throws {@link io.github.shuoros.jfiler.exception.NoBackwardHistoryException}.
+     */
     public void goBackward() {
         if (this.rearLocation.isEmpty())
             throw new NoBackwardHistoryException();
@@ -107,6 +213,11 @@ public class JFiler {
     }
 
 
+    /**
+     * Goes forward to the last front location of JFiler. The current location will be added to rear location and
+     * last front location will be set in current location. If there is no forward history
+     * it throws {@link io.github.shuoros.jfiler.exception.NoForwardHistoryException}.
+     */
     public void goForward() {
         if (this.frontLocation.isEmpty())
             throw new NoForwardHistoryException();
@@ -114,6 +225,11 @@ public class JFiler {
         this.currentLocation = this.frontLocation.pop();
     }
 
+    /**
+     * Goes up to the parent of current location of JFiler. The current location will be added to front location and
+     * parent of current location will be set in current location. If home is locked and parent of current location
+     * is outside of home it throws {@link io.github.shuoros.jfiler.exception.HomeIsLockedException}.
+     */
     public void goUp() {
         if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
             throw new HomeIsLockedException();
@@ -121,6 +237,15 @@ public class JFiler {
         this.currentLocation = this.currentLocation.getParentFolder();
     }
 
+    /**
+     * Hide the given file or folder. If Your machine is Windows its change the file or folders properties
+     * to hide it and if your machine is based on unix or mac it will add a dot "." before your desired file
+     * or folder's name.
+     *
+     * @param destination Location of your desired file or folder to hide.
+     * @throws IOException If anything goes wrong in changing the file properties or changing its name
+     *                     an IOException will be thrown.
+     */
     public void hide(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -133,6 +258,15 @@ public class JFiler {
             hideFileInWindows(destination);
     }
 
+    /**
+     * Un hides the given file or folder. If Your machine is Windows its change the file or folders properties
+     * to un hide it and if your machine is based on unix or mac it will remove the dot "." before your desired
+     * file or folder's name.
+     *
+     * @param destination Location of your desired file or folder to un hide.
+     * @throws IOException If anything goes wrong in changing the file properties or changing its name
+     *                     an IOException will be thrown.
+     */
     public void unHide(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -145,15 +279,35 @@ public class JFiler {
             unHideFileInWindows(destination);
     }
 
+    /**
+     * Renames your desired file or folder to name you want.
+     *
+     * @param destination Location of your desired file or folder.
+     * @param newName     New name of Your desired file or folder.
+     * @throws IOException If anything goes wrong in changing the name of your desired file or folder
+     *                     an IOException will be thrown.
+     */
     public void rename(String destination, String newName) throws IOException {
         cutTo(destination, newDestination(destination, newName));
     }
 
+    /**
+     * Cut your desired file or folder in destination you want.
+     *
+     * @param source      Location of your desired file or folder.
+     * @param destination Location which you want your file to be cut there.
+     * @throws IOException If anything goes wrong in cutting your desired file or folder an IOException will be thrown.
+     */
     public void cutTo(String source, String destination) throws IOException {
         copyTo(source, destination);
         delete(source);
     }
 
+    /**
+     * Saves your desired file or folder in clipboard and set pasting operation to cut method.
+     *
+     * @param source Location of your desired file or folder you want to cut.
+     */
     public void cut(String source) {
         source = pathSeparatorCorrector(source);
 
@@ -162,6 +316,13 @@ public class JFiler {
         this.copy = false;
     }
 
+    /**
+     * Copy your desired file or folder in destination you want.
+     *
+     * @param source      Location of your desired file or folder.
+     * @param destination Location which you want your file to be copy there.
+     * @throws IOException If anything goes wrong in coping your desired file or folder an IOException will be thrown.
+     */
     public void copyTo(String source, String destination) throws IOException {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
@@ -172,6 +333,11 @@ public class JFiler {
             copyFolder(source, destination);
     }
 
+    /**
+     * Saves your desired file or folder in clipboard and set pasting operation to copy method.
+     *
+     * @param source Location of your desired file or folder you want to copy.
+     */
     public void copy(String source) {
         source = pathSeparatorCorrector(source);
 
@@ -180,6 +346,13 @@ public class JFiler {
         this.cut = false;
     }
 
+    /**
+     * Pastes the file or folder in clipboard in your desired destination with pasting operation
+     * you choose before "copy/cut".
+     *
+     * @param destination Location which you want to copy or cut file or folder in clipboard.
+     * @throws IOException If anything goes wrong in coping or cutting an IOException will be thrown.
+     */
     public void paste(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -194,6 +367,13 @@ public class JFiler {
         this.cut = false;
     }
 
+    /**
+     * Compresses desired list of your files or folder into a zip file.
+     *
+     * @param destinations       List of locations of your files or folder which you want to compress.
+     * @param zipFileDestination Location of zip file to save.
+     * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
+     */
     public void zip(List<String> destinations, String zipFileDestination) throws IOException {
         zipFileDestination = pathSeparatorCorrector(zipFileDestination);
 
@@ -211,6 +391,13 @@ public class JFiler {
         delete(zipFileDestination);
     }
 
+    /**
+     * Unzips your desired zip file in destination you want.
+     *
+     * @param source      Location of Your zip file.
+     * @param destination Location of extracted files or folders from zip file to save.
+     * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
+     */
     public void unzip(String source, String destination) throws IOException {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
@@ -224,6 +411,13 @@ public class JFiler {
         deCompress(source, destination);
     }
 
+    /**
+     * Searches for files or folders with a regex in a folder you want.
+     *
+     * @param regex       Expression you want to search it in your desired folder.
+     * @param destination Location you want to search in.
+     * @return List of paths of files or folders which their names matches with given regex.
+     */
     public List<String> search(String regex, String destination) {
         destination = pathSeparatorCorrector(destination);
 
@@ -233,6 +427,13 @@ public class JFiler {
         return recursionSearch(regex, destination);
     }
 
+    /**
+     * Deletes your desired file or folder.
+     *
+     * @param destination Location of file or folder you want to delete.
+     * @throws IOException If anything goes wrong in deleting your desired file or folder
+     *                     an IOException will be thrown.
+     */
     public void delete(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -246,6 +447,12 @@ public class JFiler {
             deleteFolder(destination);
     }
 
+    /**
+     * Creates a new file in your desired location.
+     *
+     * @param destination Location which you want to create your new file in.
+     * @throws IOException If anything goes wrong in creating a new file an IOException will be thrown.
+     */
     public void createNewFile(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -255,6 +462,12 @@ public class JFiler {
         File.create(Paths.get(destination));
     }
 
+    /**
+     * Creates a new folder in your desired location.
+     *
+     * @param destination Location which you want to create your new folder in.
+     * @throws IOException If anything goes wrong in creating a new folder an IOException will be thrown.
+     */
     public void createNewFolder(String destination) throws IOException {
         destination = pathSeparatorCorrector(destination);
 
@@ -264,6 +477,12 @@ public class JFiler {
         Folder.create(Paths.get(destination));
     }
 
+    /**
+     * Checks if your desired file or folder exist or not.
+     *
+     * @param destination Location of file or folder which you want to check its existence.
+     * @return True if file exist in drive and false if its not.
+     */
     public boolean isFileExist(String destination) {
         return new java.io.File(pathSeparatorCorrector(destination)).exists();
     }
@@ -272,7 +491,7 @@ public class JFiler {
         return location.equals(this.homeLocation);
     }
 
-    private String pathSeparatorCorrector(String path){
+    private String pathSeparatorCorrector(String path) {
         return path.replaceAll("\\\\", "/");
     }
 
