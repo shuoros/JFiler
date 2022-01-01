@@ -101,6 +101,209 @@ public class JFiler {
     }
 
     /**
+     * Hide the given file or folder. If Your machine is Windows its change the file or folders properties
+     * to hide it and if your machine is based on unix or mac it will add a dot "." before your desired file
+     * or folder's name.
+     *
+     * @param destination Location of your desired file or folder to hide.
+     * @throws IOException If anything goes wrong in changing the file properties or changing its name
+     *                     an IOException will be thrown.
+     */
+    public static void hide(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
+        if (new java.io.File(destination).isHidden())
+            throw new FileIsAlreadyHideException(destination);
+
+        if (SystemOS.isUnix() || SystemOS.isMac())
+            hideFileInUnix(destination);
+        else if (SystemOS.isWindows())
+            hideFileInWindows(destination);
+    }
+
+    /**
+     * Un hides the given file or folder. If Your machine is Windows its change the file or folders properties
+     * to un hide it and if your machine is based on unix or mac it will remove the dot "." before your desired
+     * file or folder's name.
+     *
+     * @param destination Location of your desired file or folder to un hide.
+     * @throws IOException If anything goes wrong in changing the file properties or changing its name
+     *                     an IOException will be thrown.
+     */
+    public static void unHide(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
+        if (!new java.io.File(destination).isHidden())
+            throw new FileIsAlreadyVisibleException(destination);
+
+        if (SystemOS.isUnix() || SystemOS.isMac())
+            unHideFileInUnix(destination);
+        else if (SystemOS.isWindows())
+            unHideFileInWindows(destination);
+    }
+
+    /**
+     * Renames your desired file or folder to name you want.
+     *
+     * @param destination Location of your desired file or folder.
+     * @param newName     New name of Your desired file or folder.
+     * @throws IOException If anything goes wrong in changing the name of your desired file or folder
+     *                     an IOException will be thrown.
+     */
+    public static void rename(String destination, String newName) throws IOException {
+        cutTo(destination, newDestination(destination, newName));
+    }
+
+    /**
+     * Cut your desired file or folder in destination you want.
+     *
+     * @param source      Location of your desired file or folder.
+     * @param destination Location which you want your file to be cut there.
+     * @throws IOException If anything goes wrong in cutting your desired file or folder an IOException will be thrown.
+     */
+    public static void cutTo(String source, String destination) throws IOException {
+        copyTo(source, destination);
+        delete(source);
+    }
+
+    /**
+     * Copy your desired file or folder in destination you want.
+     *
+     * @param source      Location of your desired file or folder.
+     * @param destination Location which you want your file to be copy there.
+     * @throws IOException If anything goes wrong in coping your desired file or folder an IOException will be thrown.
+     */
+    public static void copyTo(String source, String destination) throws IOException {
+        source = pathSeparatorCorrector(source);
+        destination = pathSeparatorCorrector(destination);
+
+        if (new java.io.File(source).isFile())
+            copyFile(source, destination);
+        else
+            copyFolder(source, destination);
+    }
+
+    /**
+     * Compresses desired list of your files or folder into a zip file.
+     *
+     * @param destinations       List of locations of your files or folder which you want to compress.
+     * @param zipFileDestination Location of zip file to save.
+     * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
+     */
+    public void zip(List<String> destinations, String zipFileDestination) throws IOException {
+        zipFileDestination = pathSeparatorCorrector(zipFileDestination);
+
+        if (zipFileDestination.endsWith(".zip"))
+            zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
+
+        createNewFolder(zipFileDestination);
+        for (String destination : destinations) {
+            destination = pathSeparatorCorrector(destination);
+            copyTo(destination,//
+                    zipFileDestination + "/" + destination.split("/")[destination.split("/").length - 1]);
+        }
+
+        compress(zipFileDestination);
+        delete(zipFileDestination);
+    }
+
+    /**
+     * Unzips your desired zip file in destination you want.
+     *
+     * @param source      Location of Your zip file.
+     * @param destination Location of extracted files or folders from zip file to save.
+     * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
+     */
+    public void unzip(String source, String destination) throws IOException {
+        source = pathSeparatorCorrector(source);
+        destination = pathSeparatorCorrector(destination);
+
+        if (!source.endsWith(".zip"))
+            throw new NotAZipFileToExtractException(source);
+
+        if (!new java.io.File(destination).exists())
+            createNewFolder(destination);
+
+        deCompress(source, destination);
+    }
+
+    /**
+     * Searches for files or folders with a regex in a folder you want.
+     *
+     * @param regex       Expression you want to search it in your desired folder.
+     * @param destination Location you want to search in.
+     * @return List of paths of files or folders which their names matches with given regex.
+     */
+    public List<String> search(String regex, String destination) {
+        destination = pathSeparatorCorrector(destination);
+
+        if (new java.io.File(destination).isFile())
+            throw new CannotSearchInFileException(destination);
+
+        return recursionSearch(regex, destination);
+    }
+
+    /**
+     * Deletes your desired file or folder.
+     *
+     * @param destination Location of file or folder you want to delete.
+     * @throws IOException If anything goes wrong in deleting your desired file or folder
+     *                     an IOException will be thrown.
+     */
+    public static void delete(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
+        java.io.File file = new java.io.File(destination);
+        if (file.isFile()) {
+            if (!file.delete())
+                throw new IOException(//
+                        "Failed to delete the file because: " +//
+                                getReasonForFileDeletionFailureInPlainEnglish(file));
+        } else
+            deleteFolder(destination);
+    }
+
+    /**
+     * Creates a new file in your desired location.
+     *
+     * @param destination Location which you want to create your new file in.
+     * @throws IOException If anything goes wrong in creating a new file an IOException will be thrown.
+     */
+    public static void createNewFile(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
+        if (isFileExist(destination))
+            throw new FileAlreadyExistsException(destination);
+
+        File.create(Paths.get(destination));
+    }
+
+    /**
+     * Creates a new folder in your desired location.
+     *
+     * @param destination Location which you want to create your new folder in.
+     * @throws IOException If anything goes wrong in creating a new folder an IOException will be thrown.
+     */
+    public static void createNewFolder(String destination) throws IOException {
+        destination = pathSeparatorCorrector(destination);
+
+        if (isFileExist(destination))
+            throw new FileAlreadyExistsException(destination);
+
+        Folder.create(Paths.get(destination));
+    }
+
+    /**
+     * Checks if your desired file or folder exist or not.
+     *
+     * @param destination Location of file or folder which you want to check its existence.
+     * @return True if file exist in drive and false if its not.
+     */
+    public static boolean isFileExist(String destination) {
+        return new java.io.File(pathSeparatorCorrector(destination)).exists();
+    }
+
+    /**
      * If home is locked or not.
      *
      * @return true if home locked and false if home not locked.
@@ -237,71 +440,6 @@ public class JFiler {
         this.currentLocation = this.currentLocation.getParentFolder();
     }
 
-    /**
-     * Hide the given file or folder. If Your machine is Windows its change the file or folders properties
-     * to hide it and if your machine is based on unix or mac it will add a dot "." before your desired file
-     * or folder's name.
-     *
-     * @param destination Location of your desired file or folder to hide.
-     * @throws IOException If anything goes wrong in changing the file properties or changing its name
-     *                     an IOException will be thrown.
-     */
-    public void hide(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
-
-        if (new java.io.File(destination).isHidden())
-            throw new FileIsAlreadyHideException(destination);
-
-        if (SystemOS.isUnix() || SystemOS.isMac())
-            hideFileInUnix(destination);
-        else if (SystemOS.isWindows())
-            hideFileInWindows(destination);
-    }
-
-    /**
-     * Un hides the given file or folder. If Your machine is Windows its change the file or folders properties
-     * to un hide it and if your machine is based on unix or mac it will remove the dot "." before your desired
-     * file or folder's name.
-     *
-     * @param destination Location of your desired file or folder to un hide.
-     * @throws IOException If anything goes wrong in changing the file properties or changing its name
-     *                     an IOException will be thrown.
-     */
-    public void unHide(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
-
-        if (!new java.io.File(destination).isHidden())
-            throw new FileIsAlreadyVisibleException(destination);
-
-        if (SystemOS.isUnix() || SystemOS.isMac())
-            unHideFileInUnix(destination);
-        else if (SystemOS.isWindows())
-            unHideFileInWindows(destination);
-    }
-
-    /**
-     * Renames your desired file or folder to name you want.
-     *
-     * @param destination Location of your desired file or folder.
-     * @param newName     New name of Your desired file or folder.
-     * @throws IOException If anything goes wrong in changing the name of your desired file or folder
-     *                     an IOException will be thrown.
-     */
-    public void rename(String destination, String newName) throws IOException {
-        cutTo(destination, newDestination(destination, newName));
-    }
-
-    /**
-     * Cut your desired file or folder in destination you want.
-     *
-     * @param source      Location of your desired file or folder.
-     * @param destination Location which you want your file to be cut there.
-     * @throws IOException If anything goes wrong in cutting your desired file or folder an IOException will be thrown.
-     */
-    public void cutTo(String source, String destination) throws IOException {
-        copyTo(source, destination);
-        delete(source);
-    }
 
     /**
      * Saves your desired file or folder in clipboard and set pasting operation to cut method.
@@ -314,23 +452,6 @@ public class JFiler {
         this.clipBoard = new File(Paths.get(source));
         this.cut = true;
         this.copy = false;
-    }
-
-    /**
-     * Copy your desired file or folder in destination you want.
-     *
-     * @param source      Location of your desired file or folder.
-     * @param destination Location which you want your file to be copy there.
-     * @throws IOException If anything goes wrong in coping your desired file or folder an IOException will be thrown.
-     */
-    public void copyTo(String source, String destination) throws IOException {
-        source = pathSeparatorCorrector(source);
-        destination = pathSeparatorCorrector(destination);
-
-        if (new java.io.File(source).isFile())
-            copyFile(source, destination);
-        else
-            copyFolder(source, destination);
     }
 
     /**
@@ -367,131 +488,11 @@ public class JFiler {
         this.cut = false;
     }
 
-    /**
-     * Compresses desired list of your files or folder into a zip file.
-     *
-     * @param destinations       List of locations of your files or folder which you want to compress.
-     * @param zipFileDestination Location of zip file to save.
-     * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
-     */
-    public void zip(List<String> destinations, String zipFileDestination) throws IOException {
-        zipFileDestination = pathSeparatorCorrector(zipFileDestination);
-
-        if (zipFileDestination.endsWith(".zip"))
-            zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
-
-        createNewFolder(zipFileDestination);
-        for (String destination : destinations) {
-            destination = pathSeparatorCorrector(destination);
-            copyTo(destination,//
-                    zipFileDestination + "/" + destination.split("/")[destination.split("/").length - 1]);
-        }
-
-        compress(zipFileDestination);
-        delete(zipFileDestination);
-    }
-
-    /**
-     * Unzips your desired zip file in destination you want.
-     *
-     * @param source      Location of Your zip file.
-     * @param destination Location of extracted files or folders from zip file to save.
-     * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
-     */
-    public void unzip(String source, String destination) throws IOException {
-        source = pathSeparatorCorrector(source);
-        destination = pathSeparatorCorrector(destination);
-
-        if (!source.endsWith(".zip"))
-            throw new NotAZipFileToExtractException(source);
-
-        if (!new java.io.File(destination).exists())
-            createNewFolder(destination);
-
-        deCompress(source, destination);
-    }
-
-    /**
-     * Searches for files or folders with a regex in a folder you want.
-     *
-     * @param regex       Expression you want to search it in your desired folder.
-     * @param destination Location you want to search in.
-     * @return List of paths of files or folders which their names matches with given regex.
-     */
-    public List<String> search(String regex, String destination) {
-        destination = pathSeparatorCorrector(destination);
-
-        if (new java.io.File(destination).isFile())
-            throw new CannotSearchInFileException(destination);
-
-        return recursionSearch(regex, destination);
-    }
-
-    /**
-     * Deletes your desired file or folder.
-     *
-     * @param destination Location of file or folder you want to delete.
-     * @throws IOException If anything goes wrong in deleting your desired file or folder
-     *                     an IOException will be thrown.
-     */
-    public void delete(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
-
-        java.io.File file = new java.io.File(destination);
-        if (file.isFile()) {
-            if (!file.delete())
-                throw new IOException(//
-                        "Failed to delete the file because: " +//
-                                getReasonForFileDeletionFailureInPlainEnglish(file));
-        } else
-            deleteFolder(destination);
-    }
-
-    /**
-     * Creates a new file in your desired location.
-     *
-     * @param destination Location which you want to create your new file in.
-     * @throws IOException If anything goes wrong in creating a new file an IOException will be thrown.
-     */
-    public void createNewFile(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
-
-        if (isFileExist(destination))
-            throw new FileAlreadyExistsException(destination);
-
-        File.create(Paths.get(destination));
-    }
-
-    /**
-     * Creates a new folder in your desired location.
-     *
-     * @param destination Location which you want to create your new folder in.
-     * @throws IOException If anything goes wrong in creating a new folder an IOException will be thrown.
-     */
-    public void createNewFolder(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
-
-        if (isFileExist(destination))
-            throw new FileAlreadyExistsException(destination);
-
-        Folder.create(Paths.get(destination));
-    }
-
-    /**
-     * Checks if your desired file or folder exist or not.
-     *
-     * @param destination Location of file or folder which you want to check its existence.
-     * @return True if file exist in drive and false if its not.
-     */
-    public boolean isFileExist(String destination) {
-        return new java.io.File(pathSeparatorCorrector(destination)).exists();
-    }
-
     private boolean canNotItGoBackFromThisFolder(Folder location) {
         return location.equals(this.homeLocation);
     }
 
-    private String pathSeparatorCorrector(String path) {
+    private static String pathSeparatorCorrector(String path) {
         return path.replaceAll("\\\\", "/");
     }
 
@@ -499,7 +500,7 @@ public class JFiler {
         return !location.getLocation().startsWith(this.homeLocation.getLocation());
     }
 
-    private void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
+    private static void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
         byte[] buffer = new byte[1024];
         int length;
         while ((length = is.read(buffer)) > 0) {
@@ -510,7 +511,7 @@ public class JFiler {
         os.close();
     }
 
-    private String getReasonForFileDeletionFailureInPlainEnglish(java.io.File file) {
+    private static String getReasonForFileDeletionFailureInPlainEnglish(java.io.File file) {
         try {
             if (!file.exists())
                 return "It doesn't exist in the first place.";
@@ -523,7 +524,7 @@ public class JFiler {
         }
     }
 
-    private String newDestination(String destination, String newName) {
+    private static String newDestination(String destination, String newName) {
         destination = destination.replaceAll("\\\\", "/");
         StringBuilder newDestination = new StringBuilder();
         for (String directory : destination.split("/"))
@@ -535,20 +536,20 @@ public class JFiler {
         return newDestination.toString();
     }
 
-    private void hideFileInUnix(String destination) throws IOException {
+    private static void hideFileInUnix(String destination) throws IOException {
         rename(destination, "." + destination.split("/")[destination.split("/").length - 1]);
     }
 
-    private void hideFileInWindows(String destination) throws IOException {
+    private static void hideFileInWindows(String destination) throws IOException {
         Files.setAttribute(Paths.get(destination), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
     }
 
-    private void unHideFileInUnix(String destination) throws IOException {
+    private static void unHideFileInUnix(String destination) throws IOException {
         rename(destination, destination.split("/")[destination.split("/").length - 1]//
                 .replaceFirst(".", ""));
     }
 
-    private void unHideFileInWindows(String destination) throws IOException {
+    private static void unHideFileInWindows(String destination) throws IOException {
         Files.setAttribute(Paths.get(destination), "dos:hidden", false, LinkOption.NOFOLLOW_LINKS);
     }
 
@@ -622,7 +623,7 @@ public class JFiler {
         return destFile;
     }
 
-    private void copyFolder(String source, String destination) throws IOException {
+    private static void copyFolder(String source, String destination) throws IOException {
         createNewFolder(destination);
         for (String file : Objects.requireNonNull(new java.io.File(source).list())) {
             if (new java.io.File(source + "/" + file).isFile())
@@ -632,14 +633,14 @@ public class JFiler {
         }
     }
 
-    private void copyFile(String source, String destination) throws IOException {
+    private static void copyFile(String source, String destination) throws IOException {
         createNewFile(destination);
         InputStream is = new FileInputStream(source);
         OutputStream os = new FileOutputStream(destination);
         writeFromInputStreamToOutputStream(is, os);
     }
 
-    private void deleteFolder(String destination) throws IOException {
+    private static void deleteFolder(String destination) throws IOException {
         Files.walk(Paths.get(destination))
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
