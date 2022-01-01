@@ -37,8 +37,6 @@ public class JFiler {
 
     /**
      * Creates a JFiler instance on the given location.
-     *
-     * @param location Home of JFiler instance which going to be created.
      */
     public JFiler() {
         this("/");
@@ -48,10 +46,9 @@ public class JFiler {
      * Constructs a JFiler instance on the given location with lock.
      *
      * @param location Home of JFiler instance which going to be created.
-     * @param lock     A locked home means you only have access to subfiles and subfolders of home.
      */
     public JFiler(String location) {
-        if("/".equals(location))
+        if ("/".equals(location))
             this.homeLocation = null;
         else
             this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
@@ -94,25 +91,33 @@ public class JFiler {
         return new Folder(Paths.get(location));
     }
 
+    public static void hide(java.io.File file) throws IOException {
+        hide(file.getPath());
+    }
+
     /**
      * Hide the given file or folder. If Your machine is Windows its change the file or folders properties
      * to hide it and if your machine is based on unix or mac it will add a dot "." before your desired file
      * or folder's name.
      *
-     * @param destination Location of your desired file or folder to hide.
+     * @param location Location of your desired file or folder to hide.
      * @throws IOException If anything goes wrong in changing the file properties or changing its name
      *                     an IOException will be thrown.
      */
-    public static void hide(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+    public static void hide(String location) throws IOException {
+        location = pathSeparatorCorrector(location);
 
-        if (new java.io.File(destination).isHidden())
-            throw new FileIsAlreadyHideException(destination);
+        if (new java.io.File(location).isHidden())
+            throw new FileIsAlreadyHideException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
-            hideFileInUnix(destination);
+            hideFileInUnix(location);
         else if (SystemOS.isWindows())
-            hideFileInWindows(destination);
+            hideFileInWindows(location);
+    }
+
+    public static void unHide(java.io.File file) throws IOException {
+        unHide(file.getPath());
     }
 
     /**
@@ -120,32 +125,40 @@ public class JFiler {
      * to un hide it and if your machine is based on unix or mac it will remove the dot "." before your desired
      * file or folder's name.
      *
-     * @param destination Location of your desired file or folder to un hide.
+     * @param location Location of your desired file or folder to un hide.
      * @throws IOException If anything goes wrong in changing the file properties or changing its name
      *                     an IOException will be thrown.
      */
-    public static void unHide(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+    public static void unHide(String location) throws IOException {
+        location = pathSeparatorCorrector(location);
 
-        if (!new java.io.File(destination).isHidden())
-            throw new FileIsAlreadyVisibleException(destination);
+        if (!new java.io.File(location).isHidden())
+            throw new FileIsAlreadyVisibleException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
-            unHideFileInUnix(destination);
+            unHideFileInUnix(location);
         else if (SystemOS.isWindows())
-            unHideFileInWindows(destination);
+            unHideFileInWindows(location);
+    }
+
+    public static void rename(java.io.File file, String newName) throws IOException {
+        rename(file.getPath(), newName);
     }
 
     /**
      * Renames your desired file or folder to name you want.
      *
-     * @param destination Location of your desired file or folder.
+     * @param location Location of your desired file or folder.
      * @param newName     New name of Your desired file or folder.
      * @throws IOException If anything goes wrong in changing the name of your desired file or folder
      *                     an IOException will be thrown.
      */
-    public static void rename(String destination, String newName) throws IOException {
-        cutTo(destination, newDestination(destination, newName));
+    public static void rename(String location, String newName) throws IOException {
+        cutTo(location, newNamedLocation(location, newName));
+    }
+
+    public static void cutTo(java.io.File source, String destination) throws IOException {
+        cutTo(source.getPath(), destination);
     }
 
     /**
@@ -158,6 +171,10 @@ public class JFiler {
     public static void cutTo(String source, String destination) throws IOException {
         copyTo(source, destination);
         delete(source);
+    }
+
+    public static void copyTo(java.io.File source, String destination) throws IOException {
+        copyTo(source.getPath(), destination);
     }
 
     /**
@@ -180,25 +197,29 @@ public class JFiler {
     /**
      * Compresses desired list of your files or folder into a zip file.
      *
-     * @param destinations       List of locations of your files or folder which you want to compress.
+     * @param locations          List of locations of your files or folder which you want to compress.
      * @param zipFileDestination Location of zip file to save.
      * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
      */
-    public void zip(List<String> destinations, String zipFileDestination) throws IOException {
+    public static void zip(List<String> locations, String zipFileDestination) throws IOException {
         zipFileDestination = pathSeparatorCorrector(zipFileDestination);
 
         if (zipFileDestination.endsWith(".zip"))
             zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
 
         createNewFolder(zipFileDestination);
-        for (String destination : destinations) {
-            destination = pathSeparatorCorrector(destination);
-            copyTo(destination,//
-                    zipFileDestination + "/" + destination.split("/")[destination.split("/").length - 1]);
+        for (String location : locations) {
+            location = pathSeparatorCorrector(location);
+            copyTo(location,//
+                    zipFileDestination + "/" + location.split("/")[location.split("/").length - 1]);
         }
 
         compress(zipFileDestination);
         delete(zipFileDestination);
+    }
+
+    public static void unzip(java.io.File zipFile, String destination) throws IOException {
+        unzip(zipFile.getPath(), destination);
     }
 
     /**
@@ -208,7 +229,7 @@ public class JFiler {
      * @param destination Location of extracted files or folders from zip file to save.
      * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
      */
-    public void unzip(String source, String destination) throws IOException {
+    public static void unzip(String source, String destination) throws IOException {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
 
@@ -221,6 +242,10 @@ public class JFiler {
         deCompress(source, destination);
     }
 
+    public static List<String> search(String regex, Folder folder) {
+        return search(regex, folder.getPath());
+    }
+
     /**
      * Searches for files or folders with a regex in a folder you want.
      *
@@ -228,13 +253,17 @@ public class JFiler {
      * @param destination Location you want to search in.
      * @return List of paths of files or folders which their names matches with given regex.
      */
-    public List<String> search(String regex, String destination) {
+    public static List<String> search(String regex, String destination) {
         destination = pathSeparatorCorrector(destination);
 
         if (new java.io.File(destination).isFile())
             throw new CannotSearchInFileException(destination);
 
         return recursionSearch(regex, destination);
+    }
+
+    public static void delete(java.io.File file) throws IOException {
+        delete(file.getPath());
     }
 
     /**
@@ -369,8 +398,8 @@ public class JFiler {
     public List<File> getList() {
         List<File> files = new ArrayList<>();
 
-        if(null == currentLocation)
-            for(java.io.File root: java.io.File.listRoots())
+        if (null == currentLocation)
+            for (java.io.File root : java.io.File.listRoots())
                 files.add(new File(root.toPath()));
         else
             files.addAll(currentLocation.getContains());
@@ -485,10 +514,6 @@ public class JFiler {
         return location.equals(this.homeLocation);
     }
 
-    private static String pathSeparatorCorrector(String path) {
-        return path.replaceAll("\\\\", "/");
-    }
-
     private boolean canNotItGoBackToThisFolder(Folder location) {
         return !location.getLocation().startsWith(this.homeLocation.getLocation());
     }
@@ -517,16 +542,16 @@ public class JFiler {
         }
     }
 
-    private static String newDestination(String destination, String newName) {
-        destination = destination.replaceAll("\\\\", "/");
-        StringBuilder newDestination = new StringBuilder();
-        for (String directory : destination.split("/"))
-            if (directory.equals(destination.split("/")[destination.split("/").length - 1]))
-                newDestination.append(newName);
+    private static String newNamedLocation(String location, String newName) {
+        location = pathSeparatorCorrector(location);
+        StringBuilder newNamedLocation = new StringBuilder();
+        for (String directory : location.split("/"))
+            if (directory.equals(location.split("/")[location.split("/").length - 1]))
+                newNamedLocation.append(newName);
             else
-                newDestination.append(directory).append("/");
+                newNamedLocation.append(directory).append("/");
 
-        return newDestination.toString();
+        return newNamedLocation.toString();
     }
 
     private static void hideFileInUnix(String destination) throws IOException {
@@ -546,7 +571,11 @@ public class JFiler {
         Files.setAttribute(Paths.get(destination), "dos:hidden", false, LinkOption.NOFOLLOW_LINKS);
     }
 
-    private void compress(String destination) {
+    private static String pathSeparatorCorrector(String path) {
+        return path.replaceAll("\\\\", "/");
+    }
+
+    private static void compress(String destination) {
         final Path sourceDir = Paths.get(destination);
         String zipFileName = destination.concat(".zip");
         try {
@@ -572,7 +601,7 @@ public class JFiler {
         }
     }
 
-    private void deCompress(String source, String destination) throws IOException {
+    private static void deCompress(String source, String destination) throws IOException {
         java.io.File destDir = new java.io.File(destination);
         byte[] buffer = new byte[1024];
         ZipInputStream zis = new ZipInputStream(new FileInputStream(source));
@@ -603,7 +632,7 @@ public class JFiler {
         zis.close();
     }
 
-    private java.io.File extractFileFromZip(java.io.File destinationDir, ZipEntry zipEntry) throws IOException {
+    private static java.io.File extractFileFromZip(java.io.File destinationDir, ZipEntry zipEntry) throws IOException {
         java.io.File destFile = new java.io.File(destinationDir, zipEntry.getName());
 
         String destDirPath = destinationDir.getCanonicalPath();
@@ -640,7 +669,7 @@ public class JFiler {
                 .forEach(java.io.File::delete);
     }
 
-    private List<String> recursionSearch(String regex, String destination) {
+    private static List<String> recursionSearch(String regex, String destination) {
         Folder folder = new Folder(Paths.get(destination));
         List<String> foundedFiles = new ArrayList<>();
         Pattern p = Pattern.compile(regex);
