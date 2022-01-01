@@ -154,11 +154,11 @@ public class JFiler {
      *                     an IOException will be thrown.
      */
     public static void rename(String location, String newName) throws IOException {
-        cutTo(location, newNamedLocation(location, newName));
+        moveTo(location, newNamedLocation(location, newName));
     }
 
-    public static void cutTo(java.io.File source, String destination) throws IOException {
-        cutTo(source.getPath(), destination);
+    public static void moveTo(java.io.File source, String destination) throws IOException {
+        moveTo(source.getPath(), destination);
     }
 
     /**
@@ -168,7 +168,7 @@ public class JFiler {
      * @param destination Location which you want your file to be cut there.
      * @throws IOException If anything goes wrong in cutting your desired file or folder an IOException will be thrown.
      */
-    public static void cutTo(String source, String destination) throws IOException {
+    public static void moveTo(String source, String destination) throws IOException {
         copyTo(source, destination);
         delete(source);
     }
@@ -201,7 +201,7 @@ public class JFiler {
      * @param zipFileDestination Location of zip file to save.
      * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
      */
-    public static void zip(List<String> locations, String zipFileDestination) throws IOException {
+    public static void compress(List<String> locations, String zipFileDestination) throws IOException {
         zipFileDestination = pathSeparatorCorrector(zipFileDestination);
 
         if (zipFileDestination.endsWith(".zip"))
@@ -214,12 +214,12 @@ public class JFiler {
                     zipFileDestination + "/" + location.split("/")[location.split("/").length - 1]);
         }
 
-        compress(zipFileDestination);
+        zip(zipFileDestination);
         delete(zipFileDestination);
     }
 
-    public static void unzip(java.io.File zipFile, String destination) throws IOException {
-        unzip(zipFile.getPath(), destination);
+    public static void extract(java.io.File zipFile, String destination) throws IOException {
+        extract(zipFile.getPath(), destination);
     }
 
     /**
@@ -229,7 +229,7 @@ public class JFiler {
      * @param destination Location of extracted files or folders from zip file to save.
      * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
      */
-    public static void unzip(String source, String destination) throws IOException {
+    public static void extract(String source, String destination) throws IOException {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
 
@@ -239,7 +239,7 @@ public class JFiler {
         if (!new java.io.File(destination).exists())
             createNewFolder(destination);
 
-        deCompress(source, destination);
+        unZip(source, destination);
     }
 
     public static List<String> search(String regex, Folder folder) {
@@ -468,7 +468,7 @@ public class JFiler {
      *
      * @param source Location of your desired file or folder you want to cut.
      */
-    public void cut(String source) {
+    public void move(String source) {
         source = pathSeparatorCorrector(source);
 
         this.clipBoard = new File(Paths.get(source));
@@ -503,7 +503,7 @@ public class JFiler {
             if (this.copy)
                 copyTo(this.clipBoard.getPath(), destination);
             else if (this.cut)
-                cutTo(this.clipBoard.getPath(), destination);
+                moveTo(this.clipBoard.getPath(), destination);
 
         this.clipBoard = null;
         this.copy = false;
@@ -575,7 +575,7 @@ public class JFiler {
         return path.replaceAll("\\\\", "/");
     }
 
-    private static void compress(String destination) {
+    private static void zip(String destination) {
         final Path sourceDir = Paths.get(destination);
         String zipFileName = destination.concat(".zip");
         try {
@@ -601,7 +601,7 @@ public class JFiler {
         }
     }
 
-    private static void deCompress(String source, String destination) throws IOException {
+    private static void unZip(String source, String destination) throws IOException {
         java.io.File destDir = new java.io.File(destination);
         byte[] buffer = new byte[1024];
         ZipInputStream zis = new ZipInputStream(new FileInputStream(source));
