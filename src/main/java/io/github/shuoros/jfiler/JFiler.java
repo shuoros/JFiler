@@ -269,21 +269,18 @@ public class JFiler {
     /**
      * Deletes your desired file or folder.
      *
-     * @param destination Location of file or folder you want to delete.
+     * @param location Location of file or folder you want to delete.
      * @throws IOException If anything goes wrong in deleting your desired file or folder
      *                     an IOException will be thrown.
      */
-    public static void delete(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+    public static void delete(String location) throws IOException {
+        location = pathSeparatorCorrector(location);
 
-        java.io.File file = new java.io.File(destination);
+        java.io.File file = new java.io.File(location);
         if (file.isFile()) {
-            if (!file.delete())
-                throw new IOException(//
-                        "Failed to delete the file because: " +//
-                                getReasonForFileDeletionFailureInPlainEnglish(file));
+            deleteFile(file);
         } else
-            deleteFolder(destination);
+            deleteFolder(location);
     }
 
     /**
@@ -527,6 +524,13 @@ public class JFiler {
 
         is.close();
         os.close();
+    }
+
+    private static void deleteFile(java.io.File file) throws IOException {
+        if (!file.delete())
+            throw new IOException(//
+                    "Failed to delete the file because: " +//
+                            getReasonForFileDeletionFailureInPlainEnglish(file));
     }
 
     private static String getReasonForFileDeletionFailureInPlainEnglish(java.io.File file) {
