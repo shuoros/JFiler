@@ -27,7 +27,6 @@ import java.util.zip.ZipOutputStream;
  */
 public class JFiler {
 
-    private final Boolean lock;
     private final Folder homeLocation;
     private final Stack<Folder> frontLocation = new Stack<>();
     private final Stack<Folder> rearLocation = new Stack<>();
@@ -41,8 +40,8 @@ public class JFiler {
      *
      * @param location Home of JFiler instance which going to be created.
      */
-    public JFiler(String location) {
-        this(location, false);
+    public JFiler() {
+        this("/");
     }
 
     /**
@@ -51,12 +50,18 @@ public class JFiler {
      * @param location Home of JFiler instance which going to be created.
      * @param lock     A locked home means you only have access to subfiles and subfolders of home.
      */
-    public JFiler(String location, Boolean lock) {
-        this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
+    public JFiler(String location) {
+        if("/".equals(location))
+            this.homeLocation = null;
+        else
+            this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
         this.currentLocation = this.homeLocation;
-        this.lock = lock;
         this.copy = false;
         this.cut = false;
+    }
+
+    public static JFiler open() {
+        return new JFiler();
     }
 
     /**
@@ -67,17 +72,6 @@ public class JFiler {
      */
     public static JFiler open(String location) {
         return new JFiler(location);
-    }
-
-    /**
-     * Creates a new instance of JFiler for you with locked home.
-     * It means that you only have access to subfiles and subfolders of home.
-     *
-     * @param location Home of JFiler instance which going to be created.
-     * @return A new instance of JFiler in your desired location with locked home.
-     */
-    public static JFiler openInLockedHome(String location) {
-        return new JFiler(location, true);
     }
 
     /**
@@ -304,15 +298,6 @@ public class JFiler {
     }
 
     /**
-     * If home is locked or not.
-     *
-     * @return true if home locked and false if home not locked.
-     */
-    public boolean isHomeLocked() {
-        return this.lock;
-    }
-
-    /**
      * Returns an instance of {@link io.github.shuoros.jfiler.file.Folder} which represent the home.
      *
      * @return An instance of Folder which represent the home.
@@ -382,7 +367,15 @@ public class JFiler {
      * @return List of all files and folders in current location of JFiler.
      */
     public List<File> getList() {
-        return currentLocation.getContains();
+        List<File> files = new ArrayList<>();
+
+        if(null == currentLocation)
+            for(java.io.File root: java.io.File.listRoots())
+                files.add(new File(root.toPath()));
+        else
+            files.addAll(currentLocation.getContains());
+
+        return files;
     }
 
     /**
@@ -396,8 +389,8 @@ public class JFiler {
     public void openFolder(String location) {
         location = pathSeparatorCorrector(location);
 
-        if (this.lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
-            throw new HomeIsLockedException();
+//        if (this.lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
+//            throw new HomeIsLockedException();
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
         this.currentLocation = new Folder(Paths.get(location));
@@ -434,8 +427,8 @@ public class JFiler {
      * is outside of home it throws {@link io.github.shuoros.jfiler.exception.HomeIsLockedException}.
      */
     public void goUp() {
-        if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
-            throw new HomeIsLockedException();
+//        if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
+//            throw new HomeIsLockedException();
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.currentLocation.getParentFolder();
     }
