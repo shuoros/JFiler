@@ -413,7 +413,7 @@ public class JFiler {
      * @param location Location of desired folder which you want to open.
      */
     public void openFolder(String location) {
-        if(homeLocation != null && !location.startsWith("/"))
+        if (this.homeLocation != null && !location.startsWith("/"))
             location = "/".concat(location);
 
         location = pathSeparatorCorrector(location);
@@ -423,7 +423,7 @@ public class JFiler {
 
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
-        if(homeLocation == null)
+        if (homeLocation == null)
             this.currentLocation = new Folder(Paths.get(location));
         else
             this.currentLocation = new Folder(Paths.get(homeLocation.getPath().concat(location)));
@@ -460,10 +460,14 @@ public class JFiler {
      * is outside of home it throws {@link LocationNotFoundException}.
      */
     public void goUp() {
-//        if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
-//            throw new HomeIsLockedException();
+        if (this.currentLocation == null || canNotGoUpFromThisFolder(this.currentLocation.getPath()))
+            throw new LocationNotFoundException(null);
+
         this.frontLocation.push(this.currentLocation);
-        this.currentLocation = this.currentLocation.getParentFolder();
+        if(this.currentLocation.getPath().split("(?<!:)/").length == 1)
+            this.currentLocation = null;
+        else
+            this.currentLocation = this.currentLocation.getParentFolder();
     }
 
 
@@ -519,8 +523,8 @@ public class JFiler {
                 || (homeLocation != null && !File.exist(Paths.get(homeLocation.getPath().concat(location))));
     }
 
-    private boolean canNotItGoBackFromThisFolder(Folder location) {
-        return location.equals(this.homeLocation);
+    private boolean canNotGoUpFromThisFolder(String location) {
+        return homeLocation != null && location.equals(homeLocation.getPath());
     }
 
     private static void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
