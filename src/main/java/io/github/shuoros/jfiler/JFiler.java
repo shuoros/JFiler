@@ -413,20 +413,14 @@ public class JFiler {
      * @param location Location of desired folder which you want to open.
      */
     public void openFolder(String location) {
-        if (this.homeLocation != null && !location.startsWith("/"))
-            location = "/".concat(location);
-
-        location = pathSeparatorCorrector(location);
+        location = InitialPreparationOfLocation(location);
 
         if (canNotOpenThis(location))
             throw new LocationNotFoundException(location);
 
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
-        if (homeLocation == null)
-            this.currentLocation = new Folder(Paths.get(location));
-        else
-            this.currentLocation = new Folder(Paths.get(homeLocation.getPath().concat(location)));
+        this.currentLocation = new Folder(Paths.get(location));
     }
 
     /**
@@ -464,12 +458,11 @@ public class JFiler {
             throw new LocationNotFoundException(null);
 
         this.frontLocation.push(this.currentLocation);
-        if(this.currentLocation.getPath().split("(?<!:)/").length == 1)
+        if(currentLocationIsLastLocationToUp())
             this.currentLocation = null;
         else
             this.currentLocation = this.currentLocation.getParentFolder();
     }
-
 
     /**
      * Saves your desired file or folder in clipboard and set pasting operation to cut method.
@@ -477,7 +470,7 @@ public class JFiler {
      * @param source Location of your desired file or folder you want to cut.
      */
     public void move(String source) {
-        source = pathSeparatorCorrector(source);
+        source = InitialPreparationOfLocation(source);
 
         this.clipBoard = new File(Paths.get(source));
         this.cut = true;
@@ -490,7 +483,7 @@ public class JFiler {
      * @param source Location of your desired file or folder you want to copy.
      */
     public void copy(String source) {
-        source = pathSeparatorCorrector(source);
+        source = InitialPreparationOfLocation(source);
 
         this.clipBoard = new File(Paths.get(source));
         this.copy = true;
@@ -505,7 +498,7 @@ public class JFiler {
      * @throws IOException If anything goes wrong in coping or cutting an IOException will be thrown.
      */
     public void paste(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+        destination = InitialPreparationOfLocation(destination);
 
         if (this.clipBoard != null)
             if (this.copy)
@@ -516,6 +509,16 @@ public class JFiler {
         this.clipBoard = null;
         this.copy = false;
         this.cut = false;
+    }
+
+    private Boolean currentLocationIsLastLocationToUp(){
+        return this.currentLocation.getPath().split("(?<!:)/").length == 1;
+    }
+
+    private String InitialPreparationOfLocation(String location){
+        if (this.homeLocation != null && !location.startsWith("/"))
+            location = homeLocation.getPath().concat("/").concat(location);
+        return pathSeparatorCorrector(location);
     }
 
     private boolean canNotOpenThis(String location) {
