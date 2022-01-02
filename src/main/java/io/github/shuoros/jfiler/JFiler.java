@@ -149,7 +149,7 @@ public class JFiler {
      * Renames your desired file or folder to name you want.
      *
      * @param location Location of your desired file or folder.
-     * @param newName     New name of Your desired file or folder.
+     * @param newName  New name of Your desired file or folder.
      * @throws IOException If anything goes wrong in changing the name of your desired file or folder
      *                     an IOException will be thrown.
      */
@@ -408,18 +408,25 @@ public class JFiler {
      * Opens a folder in the given location in JFiler's current location. The current location will be added
      * to rear location and the folder you give to function will be set in current location. If home is locked
      * and the given location is outside of home it throws
-     * {@link io.github.shuoros.jfiler.exception.HomeIsLockedException}.
+     * {@link LocationNotFoundException}.
      *
      * @param location Location of desired folder which you want to open.
      */
     public void openFolder(String location) {
+        if(homeLocation != null && !location.startsWith("/"))
+            location = "/".concat(location);
+
         location = pathSeparatorCorrector(location);
 
-//        if (this.lock && canNotItGoBackToThisFolder(new Folder(Paths.get(location))))
-//            throw new HomeIsLockedException();
+        if (canNotOpenThis(location))
+            throw new LocationNotFoundException(location);
+
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
-        this.currentLocation = new Folder(Paths.get(location));
+        if(homeLocation == null)
+            this.currentLocation = new Folder(Paths.get(location));
+        else
+            this.currentLocation = new Folder(Paths.get(homeLocation.getPath().concat(location)));
     }
 
     /**
@@ -450,7 +457,7 @@ public class JFiler {
     /**
      * Goes up to the parent of current location of JFiler. The current location will be added to front location and
      * parent of current location will be set in current location. If home is locked and parent of current location
-     * is outside of home it throws {@link io.github.shuoros.jfiler.exception.HomeIsLockedException}.
+     * is outside of home it throws {@link LocationNotFoundException}.
      */
     public void goUp() {
 //        if (this.lock && canNotItGoBackFromThisFolder(this.currentLocation))
@@ -507,12 +514,13 @@ public class JFiler {
         this.cut = false;
     }
 
-    private boolean canNotItGoBackFromThisFolder(Folder location) {
-        return location.equals(this.homeLocation);
+    private boolean canNotOpenThis(String location) {
+        return (homeLocation == null && !File.exist(Paths.get(location))) //
+                || (homeLocation != null && !File.exist(Paths.get(homeLocation.getPath().concat(location))));
     }
 
-    private boolean canNotItGoBackToThisFolder(Folder location) {
-        return !location.getLocation().startsWith(this.homeLocation.getLocation());
+    private boolean canNotItGoBackFromThisFolder(Folder location) {
+        return location.equals(this.homeLocation);
     }
 
     private static void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
