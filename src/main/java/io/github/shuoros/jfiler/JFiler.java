@@ -207,13 +207,7 @@ public class JFiler {
         if (zipFileDestination.endsWith(".zip"))
             zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
 
-        createNewFolder(zipFileDestination);
-        for (String location : locations) {
-            location = pathSeparatorCorrector(location);
-            copyTo(location,//
-                    zipFileDestination + "/" + location.split("/")[location.split("/").length - 1]);
-        }
-
+        createATempFolderForFilesToCompressFrom(locations, zipFileDestination);
         zip(zipFileDestination);
         delete(zipFileDestination);
     }
@@ -233,6 +227,7 @@ public class JFiler {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
 
+
         if (!source.endsWith(".zip"))
             throw new NotAZipFileToExtractException(source);
 
@@ -250,16 +245,16 @@ public class JFiler {
      * Searches for files or folders with a regex in a folder you want.
      *
      * @param regex       Expression you want to search it in your desired folder.
-     * @param destination Location you want to search in.
+     * @param location Location you want to search in.
      * @return List of paths of files or folders which their names matches with given regex.
      */
-    public static List<String> search(String regex, String destination) {
-        destination = pathSeparatorCorrector(destination);
+    public static List<String> search(String regex, String location) {
+        location = pathSeparatorCorrector(location);
 
-        if (new java.io.File(destination).isFile())
-            throw new CannotSearchInFileException(destination);
+        if (new java.io.File(location).isFile())
+            throw new CannotSearchInFileException(location);
 
-        return recursionSearch(regex, destination);
+        return recursionSearch(regex, location);
     }
 
     public static void delete(java.io.File file) throws IOException {
@@ -286,41 +281,41 @@ public class JFiler {
     /**
      * Creates a new file in your desired location.
      *
-     * @param destination Location which you want to create your new file in.
+     * @param location Location which you want to create your new file in.
      * @throws IOException If anything goes wrong in creating a new file an IOException will be thrown.
      */
-    public static void createNewFile(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+    public static void createNewFile(String location) throws IOException {
+        location = pathSeparatorCorrector(location);
 
-        if (isFileExist(destination))
-            throw new FileAlreadyExistsException(destination);
+        if (isFileExist(location))
+            throw new FileAlreadyExistsException(location);
 
-        File.create(Paths.get(destination));
+        File.create(Paths.get(location));
     }
 
     /**
      * Creates a new folder in your desired location.
      *
-     * @param destination Location which you want to create your new folder in.
+     * @param location Location which you want to create your new folder in.
      * @throws IOException If anything goes wrong in creating a new folder an IOException will be thrown.
      */
-    public static void createNewFolder(String destination) throws IOException {
-        destination = pathSeparatorCorrector(destination);
+    public static void createNewFolder(String location) throws IOException {
+        location = pathSeparatorCorrector(location);
 
-        if (isFileExist(destination))
-            throw new FileAlreadyExistsException(destination);
+        if (isFileExist(location))
+            throw new FileAlreadyExistsException(location);
 
-        Folder.create(Paths.get(destination));
+        Folder.create(Paths.get(location));
     }
 
     /**
      * Checks if your desired file or folder exist or not.
      *
-     * @param destination Location of file or folder which you want to check its existence.
+     * @param location Location of file or folder which you want to check its existence.
      * @return True if file exist in drive and false if its not.
      */
-    public static boolean isFileExist(String destination) {
-        return new java.io.File(pathSeparatorCorrector(destination)).exists();
+    public static boolean isFileExist(String location) {
+        return new java.io.File(pathSeparatorCorrector(location)).exists();
     }
 
     /**
@@ -516,7 +511,7 @@ public class JFiler {
     }
 
     private String InitialPreparationOfLocation(String location){
-        if (this.homeLocation != null && !location.startsWith("/"))
+        if (homeLocation != null && !location.startsWith("/"))
             location = homeLocation.getPath().concat("/").concat(location);
         return pathSeparatorCorrector(location);
     }
@@ -592,6 +587,15 @@ public class JFiler {
 
     private static String pathSeparatorCorrector(String path) {
         return path.replaceAll("\\\\", "/");
+    }
+
+    private static void createATempFolderForFilesToCompressFrom(List<String> locations, String zipFileDestination) throws IOException {
+        createNewFolder(zipFileDestination);
+        for (String location : locations) {
+            location = pathSeparatorCorrector(location);
+            copyTo(location,//
+                    zipFileDestination + "/" + location.split("/")[location.split("/").length - 1]);
+        }
     }
 
     private static void zip(String destination) {
