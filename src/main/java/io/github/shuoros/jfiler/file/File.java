@@ -62,6 +62,9 @@ public class File extends java.io.File {
         return file;
     }
 
+    public static Boolean exist(Path location){
+        return location.toFile().exists();
+    }
 
     /**
      * Gets type of file.
