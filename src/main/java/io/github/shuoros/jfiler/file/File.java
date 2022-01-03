@@ -50,6 +50,9 @@ public class File extends java.io.File {
         return new File(location);
     }
 
+    public static File create(String location) throws IOException {
+        return create(Paths.get(location));
+    }
     /**
      * Creates a new file for you and returns a {@link io.github.shuoros.jfiler.file.File} instance
      * which hold your new file.
