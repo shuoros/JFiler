@@ -79,6 +79,14 @@ public class File extends java.io.File {
         return location.toFile().isFile();
     }
 
+    public static Boolean isHidden(String location){
+        return isHidden(Paths.get(location));
+    }
+
+    public static Boolean isHidden(Path location){
+        return location.toFile().isHidden();
+    }
+
     /**
      * Gets type of file.
      *
