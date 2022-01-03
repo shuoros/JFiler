@@ -358,7 +358,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo.txt";
 
         // When
-        jFiler.cutTo(mustBeCutFile.getPath(), destination);
+        jFiler.moveTo(mustBeCutFile.getPath(), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -372,7 +372,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/CutCopyOperations/CutTo.txt";
 
         // When
-        jFiler.cutTo(mustBeCutFile.getPath(), destination);
+        jFiler.moveTo(mustBeCutFile.getPath(), destination);
 
         // Then
         assertFalse(mustBeCutFile.exists());
@@ -386,7 +386,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo";
 
         // When
-        jFiler.cutTo(mustBeCutFile.getPath(), destination);
+        jFiler.moveTo(mustBeCutFile.getPath(), destination);
 
         // Then
         assertTrue(new Folder(Paths.get(destination)).exists());
@@ -398,13 +398,13 @@ public class JFilerTests {
         // Given
         List<File> files = List.of(openFolder("JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo/nothing")//
                 , openFile("JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo/nothing.txt"));
-        Folder cutFile = openFolder("JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo");
+        Folder moveFile = openFolder("JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo");
 
         // When
-        // cuted in 25th test
+        // moveed in 25th test
 
         // Then
-        assertEquals(files, cutFile.getContains());
+        assertEquals(files, moveFile.getContains());
     }
 
     @Test
@@ -415,7 +415,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/CutCopyOperations/CutTo";
 
         // When
-        jFiler.cutTo(mustBeCutFolder.getPath(), destination);
+        jFiler.moveTo(mustBeCutFolder.getPath(), destination);
 
         // Then
         assertFalse(mustBeCutFolder.exists());
@@ -428,7 +428,7 @@ public class JFilerTests {
         File mustBeCutFile = openFile("JFilerCreatedSuccessfully/CutCopyOperations/CutTo.txt");
 
         // When
-        jFiler.cut(mustBeCutFile.getPath());
+        jFiler.move(mustBeCutFile.getPath());
 
         // Then
         assertEquals(mustBeCutFile, jFiler.getClipBoard());
@@ -441,10 +441,10 @@ public class JFilerTests {
         File mustBeCutFile = openFile("JFilerCreatedSuccessfully/CutCopyOperations/CutTo.txt");
 
         // When
-        jFiler.cut(mustBeCutFile.getPath());
+        jFiler.move(mustBeCutFile.getPath());
 
         // Then
-        assertEquals("cut", jFiler.getPasteOperation());
+        assertEquals("move", jFiler.getPasteOperation());
     }
 
     @Test
@@ -455,14 +455,14 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/CutCopyOperations/Cut/CutTo.txt";
 
         // When
-        jFiler.cut(mustBeCutFile.getPath());
+        jFiler.move(mustBeCutFile.getPath());
         jFiler.paste(destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
 
         // After
-        jFiler.cutTo(destination, mustBeCutFile.getPath());
+        jFiler.moveTo(destination, mustBeCutFile.getPath());
     }
 
     @Test
@@ -540,7 +540,7 @@ public class JFilerTests {
         File mustBeCopyFile = openFile("JFilerCreatedSuccessfully/CutCopyOperations/CopyTo.txt");
 
         // When
-        jFiler.cut(mustBeCopyFile.getPath());
+        jFiler.move(mustBeCopyFile.getPath());
 
         // Then
         assertEquals(mustBeCopyFile, jFiler.getClipBoard());
@@ -585,7 +585,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped.zip";
 
         // When
-        jFiler.zip(List.of(file.getPath()), destination);
+        jFiler.compress(List.of(file.getPath()), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -603,7 +603,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped.zip";
 
         // When
-        jFiler.zip(List.of(file1.getPath(), file2.getPath()), destination);
+        jFiler.compress(List.of(file1.getPath(), file2.getPath()), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -620,7 +620,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped.zip";
 
         // When
-        jFiler.zip(List.of(folder.getPath()), destination);
+        jFiler.compress(List.of(folder.getPath()), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -638,7 +638,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped.zip";
 
         // When
-        jFiler.zip(List.of(folder1.getPath(), folder2.getPath()), destination);
+        jFiler.compress(List.of(folder1.getPath(), folder2.getPath()), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -658,7 +658,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped.zip";
 
         // When
-        jFiler.zip(List.of(file1.getPath(), file2.getPath(), folder1.getPath(), folder2.getPath()), destination);
+        jFiler.compress(List.of(file1.getPath(), file2.getPath(), folder1.getPath(), folder2.getPath()), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -672,7 +672,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped";
 
         // When
-        jFiler.unzip(zipFile.getPath(), destination);
+        jFiler.extract(zipFile.getPath(), destination);
 
         // Then
         assertTrue(new File(Paths.get(destination)).exists());
@@ -689,7 +689,7 @@ public class JFilerTests {
         String destination = resource + "/JFilerCreatedSuccessfully/ZipOperations/zipped";
 
         // When
-        jFiler.unzip(zipFile.getPath(), destination);
+        jFiler.extract(zipFile.getPath(), destination);
 
         // Then
         assertEquals(4, openFolder("JFilerCreatedSuccessfully/ZipOperations/zipped").getContains().size());

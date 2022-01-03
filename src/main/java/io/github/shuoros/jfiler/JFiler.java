@@ -48,10 +48,7 @@ public class JFiler {
      * @param location Home of JFiler instance which going to be created.
      */
     public JFiler(String location) {
-        if ("/".equals(location))
-            this.homeLocation = null;
-        else
-            this.homeLocation = new Folder(Paths.get(pathSeparatorCorrector(location)));
+        this.homeLocation = ("/".equals(location)) ? null : Folder.open(pathSeparatorCorrector(location));
         this.currentLocation = this.homeLocation;
         this.copy = false;
         this.cut = false;
@@ -78,7 +75,7 @@ public class JFiler {
      * @return New instance of File in your desired location.
      */
     public static File getFile(String location) {
-        return new File(Paths.get(location));
+        return File.open(location);
     }
 
     /**
@@ -88,7 +85,7 @@ public class JFiler {
      * @return New instance of Folder in your desired location.
      */
     public static Folder getFolder(String location) {
-        return new Folder(Paths.get(location));
+        return Folder.open(location);
     }
 
     public static void hide(java.io.File file) throws IOException {
@@ -107,7 +104,7 @@ public class JFiler {
     public static void hide(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
-        if (new java.io.File(location).isHidden())
+        if (File.isHidden(location))
             throw new FileIsAlreadyHideException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
@@ -132,7 +129,7 @@ public class JFiler {
     public static void unHide(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
-        if (!new java.io.File(location).isHidden())
+        if (File.isVisible(location))
             throw new FileIsAlreadyVisibleException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
@@ -188,7 +185,7 @@ public class JFiler {
         source = pathSeparatorCorrector(source);
         destination = pathSeparatorCorrector(destination);
 
-        if (new java.io.File(source).isFile())
+        if (File.isFile(source))
             copyFile(source, destination);
         else
             copyFolder(source, destination);
@@ -231,7 +228,7 @@ public class JFiler {
         if (!source.endsWith(".zip"))
             throw new NotAZipFileToExtractException(source);
 
-        if (!new java.io.File(destination).exists())
+        if (!File.exists(destination))
             createNewFolder(destination);
 
         unZip(source, destination);
@@ -244,14 +241,14 @@ public class JFiler {
     /**
      * Searches for files or folders with a regex in a folder you want.
      *
-     * @param regex       Expression you want to search it in your desired folder.
+     * @param regex    Expression you want to search it in your desired folder.
      * @param location Location you want to search in.
      * @return List of paths of files or folders which their names matches with given regex.
      */
     public static List<String> search(String regex, String location) {
         location = pathSeparatorCorrector(location);
 
-        if (new java.io.File(location).isFile())
+        if (File.isFile(location))
             throw new CannotSearchInFileException(location);
 
         return recursionSearch(regex, location);
@@ -271,10 +268,9 @@ public class JFiler {
     public static void delete(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
-        java.io.File file = new java.io.File(location);
-        if (file.isFile()) {
-            deleteFile(file);
-        } else
+        if (File.isFile(location))
+            deleteFile(location);
+        else
             deleteFolder(location);
     }
 
@@ -287,7 +283,7 @@ public class JFiler {
     public static void createNewFile(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
-        if (isFileExist(location))
+        if (File.exists(location))
             throw new FileAlreadyExistsException(location);
 
         File.create(Paths.get(location));
@@ -302,7 +298,7 @@ public class JFiler {
     public static void createNewFolder(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
-        if (isFileExist(location))
+        if (File.exists(location))
             throw new FileAlreadyExistsException(location);
 
         Folder.create(Paths.get(location));
@@ -315,7 +311,7 @@ public class JFiler {
      * @return True if file exist in drive and false if its not.
      */
     public static boolean isFileExist(String location) {
-        return new java.io.File(pathSeparatorCorrector(location)).exists();
+        return File.exists(location);
     }
 
     /**
@@ -390,11 +386,11 @@ public class JFiler {
     public List<File> getList() {
         List<File> files = new ArrayList<>();
 
-        if (null == currentLocation)
+        if (null == this.currentLocation)
             for (java.io.File root : java.io.File.listRoots())
                 files.add(new File(root.toPath()));
         else
-            files.addAll(currentLocation.getContains());
+            files.addAll(this.currentLocation.getContains());
 
         return files;
     }
@@ -415,7 +411,7 @@ public class JFiler {
 
         this.frontLocation.clear();
         this.rearLocation.push(this.currentLocation);
-        this.currentLocation = new Folder(Paths.get(location));
+        this.currentLocation = Folder.open(location);
     }
 
     /**
@@ -453,7 +449,7 @@ public class JFiler {
             throw new LocationNotFoundException(null);
 
         this.frontLocation.push(this.currentLocation);
-        if(currentLocationIsLastLocationToUp())
+        if (currentLocationIsLastLocationToUp())
             this.currentLocation = null;
         else
             this.currentLocation = this.currentLocation.getParentFolder();
@@ -467,7 +463,7 @@ public class JFiler {
     public void move(String source) {
         source = InitialPreparationOfLocation(source);
 
-        this.clipBoard = new File(Paths.get(source));
+        this.clipBoard = File.open(source);
         this.cut = true;
         this.copy = false;
     }
@@ -480,7 +476,7 @@ public class JFiler {
     public void copy(String source) {
         source = InitialPreparationOfLocation(source);
 
-        this.clipBoard = new File(Paths.get(source));
+        this.clipBoard = File.open(source);
         this.copy = true;
         this.cut = false;
     }
@@ -506,23 +502,23 @@ public class JFiler {
         this.cut = false;
     }
 
-    private Boolean currentLocationIsLastLocationToUp(){
+    private Boolean currentLocationIsLastLocationToUp() {
         return this.currentLocation.getPath().split("(?<!:)/").length == 1;
     }
 
-    private String InitialPreparationOfLocation(String location){
-        if (homeLocation != null && !location.startsWith("/"))
-            location = homeLocation.getPath().concat("/").concat(location);
+    private String InitialPreparationOfLocation(String location) {
+        if (this.homeLocation != null && !location.startsWith("/"))
+            location = this.homeLocation.getPath().concat("/").concat(location);
         return pathSeparatorCorrector(location);
     }
 
     private boolean canNotOpenThis(String location) {
-        return (homeLocation == null && !File.exist(Paths.get(location))) //
-                || (homeLocation != null && !File.exist(Paths.get(homeLocation.getPath().concat(location))));
+        return (this.homeLocation == null && !File.exists(location)) //
+                || (this.homeLocation != null && !File.exists(this.homeLocation.getPath().concat(location)));
     }
 
     private boolean canNotGoUpFromThisFolder(String location) {
-        return homeLocation != null && location.equals(homeLocation.getPath());
+        return this.homeLocation != null && location.equals(this.homeLocation.getPath());
     }
 
     private static void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
@@ -536,14 +532,15 @@ public class JFiler {
         os.close();
     }
 
-    private static void deleteFile(java.io.File file) throws IOException {
+    private static void deleteFile(String location) throws IOException {
+        File file = File.open(location);
         if (!file.delete())
             throw new IOException(//
                     "Failed to delete the file because: " +//
                             getReasonForFileDeletionFailureInPlainEnglish(file));
     }
 
-    private static String getReasonForFileDeletionFailureInPlainEnglish(java.io.File file) {
+    private static String getReasonForFileDeletionFailureInPlainEnglish(File file) {
         try {
             if (!file.exists())
                 return "It doesn't exist in the first place.";
