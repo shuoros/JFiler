@@ -36,6 +36,10 @@ public class File extends java.io.File {
         this.type = super.isFile() ? Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1)) : Type.Folder;
     }
 
+    public static File open(String location) {
+        return open(Paths.get(location));
+    }
+
     /**
      * Creates a new instance of {@link io.github.shuoros.jfiler.file.File} for you.
      *
