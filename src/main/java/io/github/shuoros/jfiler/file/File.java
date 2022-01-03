@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
@@ -62,8 +63,20 @@ public class File extends java.io.File {
         return file;
     }
 
+    public static Boolean exist(String location){
+        return exist(Paths.get(location));
+    }
+
     public static Boolean exist(Path location){
         return location.toFile().exists();
+    }
+
+    public static Boolean isFile(String location){
+        return isFile(Paths.get(location));
+    }
+
+    public static Boolean isFile(Path location){
+        return location.toFile().isFile();
     }
 
     /**
