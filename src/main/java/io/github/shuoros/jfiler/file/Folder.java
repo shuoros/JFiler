@@ -46,6 +46,10 @@ public class Folder extends File {
         return new Folder(location);
     }
 
+    public static Folder create(String location) throws IOException {
+        return create(Paths.get(location));
+    }
+
     /**
      * Creates a new folder for you and returns a {@link io.github.shuoros.jfiler.file.Folder} instance
      * which hold your new folder.
