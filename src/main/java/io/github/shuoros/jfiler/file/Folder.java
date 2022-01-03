@@ -32,6 +32,10 @@ public class Folder extends File {
         super(location);
     }
 
+    public static Folder open(String location) {
+        return open(Paths.get(location));
+    }
+
     /**
      * Creates a new instance of {@link io.github.shuoros.jfiler.file.Folder} for you.
      *
