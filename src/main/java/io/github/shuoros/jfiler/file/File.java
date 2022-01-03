@@ -53,6 +53,7 @@ public class File extends java.io.File {
     public static File create(String location) throws IOException {
         return create(Paths.get(location));
     }
+
     /**
      * Creates a new file for you and returns a {@link io.github.shuoros.jfiler.file.File} instance
      * which hold your new file.
@@ -70,35 +71,35 @@ public class File extends java.io.File {
         return file;
     }
 
-    public static Boolean exist(String location){
-        return exist(Paths.get(location));
+    public static Boolean exists(String location) {
+        return exists(Paths.get(location));
     }
 
-    public static Boolean exist(Path location){
+    public static Boolean exists(Path location) {
         return location.toFile().exists();
     }
 
-    public static Boolean isFile(String location){
+    public static Boolean isFile(String location) {
         return isFile(Paths.get(location));
     }
 
-    public static Boolean isFile(Path location){
+    public static Boolean isFile(Path location) {
         return location.toFile().isFile();
     }
 
-    public static Boolean isVisible(String location){
+    public static Boolean isVisible(String location) {
         return !isHidden(location);
     }
 
-    public static Boolean isVisible(Path location){
+    public static Boolean isVisible(Path location) {
         return !isHidden(location);
     }
 
-    public static Boolean isHidden(String location){
+    public static Boolean isHidden(String location) {
         return isHidden(Paths.get(location));
     }
 
-    public static Boolean isHidden(Path location){
+    public static Boolean isHidden(Path location) {
         return location.toFile().isHidden();
     }
 

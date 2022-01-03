@@ -100,7 +100,7 @@ public class Folder extends File {
 
     private void extractContainedFilesAndFolders(Path location) {
         Arrays.stream(Objects.requireNonNull(super.list())).forEach(i -> {
-            if(!skipFolder(i)) {
+            if (!skipFolder(i)) {
                 i = pathConcator(location.toString(), i);
                 contains.add(new java.io.File(i).isFile() ? new File(Paths.get(i)) : new Folder(Paths.get(i)));
             }
@@ -112,17 +112,17 @@ public class Folder extends File {
                 .mapToLong(file -> file.isFile() ? file.getSize() : calculateFolderSize((Folder) file)).sum();
     }
 
-    private boolean skipFolder(String location){
-        if(location.startsWith("$"))
+    private boolean skipFolder(String location) {
+        if (location.startsWith("$"))
             return true;
-        if(location.equals("System Volume Information"))
+        if (location.equals("System Volume Information"))
             return true;
         return false;
     }
 
-    private String pathConcator(String path, String location){
+    private String pathConcator(String path, String location) {
         path = pathSeparatorCorrector(path);
-        if(!path.endsWith("/"))
+        if (!path.endsWith("/"))
             path += "/";
         return path.concat(location);
     }
