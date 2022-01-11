@@ -1,5 +1,6 @@
 package io.github.shuoros.jfiler;
 
+import io.github.shuoros.jcompressor.JCompressor;
 import io.github.shuoros.jfiler.exception.*;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
@@ -191,22 +192,24 @@ public class JFiler {
             copyFolder(source, destination);
     }
 
+    public static void compress(List<String> locations, String compressFileDestination, JCompressor compressor) {
+        List<java.io.File> files = new ArrayList<>();
+        for (String location : locations)
+            files.add(new java.io.File(location));
+
+        java.io.File toCompressFile = new java.io.File(compressFileDestination);
+        compress(files, toCompressFile, compressor);
+    }
+
     /**
      * Compresses desired list of your files or folder into a zip file.
      *
-     * @param locations          List of locations of your files or folder which you want to compress.
-     * @param zipFileDestination Location of zip file to save.
-     * @throws IOException If anything goes wrong in zipping your files or folders an IOException will be thrown.
+     * @param locations               List of locations of your files or folder which you want to compress.
+     * @param compressFileDestination Location of zip file to save.
+     * @param compressor              Compress method
      */
-    public static void compress(List<String> locations, String zipFileDestination) throws IOException {
-        zipFileDestination = pathSeparatorCorrector(zipFileDestination);
-
-        if (zipFileDestination.endsWith(".zip"))
-            zipFileDestination = zipFileDestination.replaceAll(".zip$", "");
-
-        createATempFolderForFilesToCompressFrom(locations, zipFileDestination);
-        zip(zipFileDestination);
-        delete(zipFileDestination);
+    public static void compress(List<java.io.File> locations, java.io.File compressFileDestination, JCompressor compressor) {
+        compressor.compress(locations, compressFileDestination);
     }
 
     public static void extract(java.io.File zipFile, String destination) throws IOException {
@@ -584,85 +587,6 @@ public class JFiler {
 
     private static String pathSeparatorCorrector(String path) {
         return path.replaceAll("\\\\", "/");
-    }
-
-    private static void createATempFolderForFilesToCompressFrom(List<String> locations, String zipFileDestination) throws IOException {
-        createNewFolder(zipFileDestination);
-        for (String location : locations) {
-            location = pathSeparatorCorrector(location);
-            copyTo(location,//
-                    zipFileDestination + "/" + location.split("/")[location.split("/").length - 1]);
-        }
-    }
-
-    private static void zip(String destination) {
-        final Path sourceDir = Paths.get(destination);
-        String zipFileName = destination.concat(".zip");
-        try {
-            final ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFileName));
-            Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
-                    try {
-                        Path targetFile = sourceDir.relativize(file);
-                        outputStream.putNextEntry(new ZipEntry(targetFile.toString()));
-                        byte[] bytes = Files.readAllBytes(file);
-                        outputStream.write(bytes, 0, bytes.length);
-                        outputStream.closeEntry();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void unZip(String source, String destination) throws IOException {
-        java.io.File destDir = new java.io.File(destination);
-        byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(source));
-        ZipEntry zipEntry = zis.getNextEntry();
-        while (zipEntry != null) {
-            java.io.File newFile = extractFileFromZip(destDir, zipEntry);
-            if (zipEntry.isDirectory()) {
-                if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                    throw new IOException("Failed to create directory " + newFile);
-                }
-            } else {
-                // fix for Windows-created archives
-                java.io.File parent = newFile.getParentFile();
-                if (!parent.isDirectory() && !parent.mkdirs()) {
-                    throw new IOException("Failed to create directory " + parent);
-                }
-
-                FileOutputStream fos = new FileOutputStream(newFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
-                }
-                fos.close();
-            }
-            zipEntry = zis.getNextEntry();
-        }
-        zis.closeEntry();
-        zis.close();
-    }
-
-    private static java.io.File extractFileFromZip(java.io.File destinationDir, ZipEntry zipEntry) throws IOException {
-        java.io.File destFile = new java.io.File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + java.io.File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-        }
-
-        return destFile;
     }
 
     private static void copyFolder(String source, String destination) throws IOException {
