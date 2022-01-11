@@ -212,29 +212,19 @@ public class JFiler {
         compressor.compress(locations, compressFileDestination);
     }
 
-    public static void extract(java.io.File zipFile, String destination) throws IOException {
-        extract(zipFile.getPath(), destination);
+    public static void extract(String source, String destination, JCompressor extractor) {
+        extract(new java.io.File(source), new java.io.File(destination), extractor);
     }
 
     /**
      * Unzips your desired zip file in destination you want.
      *
-     * @param source      Location of Your zip file.
+     * @param zipFile      Location of Your zip file.
      * @param destination Location of extracted files or folders from zip file to save.
-     * @throws IOException If anything goes wrong in unzipping your files or folders an IOException will be thrown.
+     * @param extractor   Extract method.
      */
-    public static void extract(String source, String destination) throws IOException {
-        source = pathSeparatorCorrector(source);
-        destination = pathSeparatorCorrector(destination);
-
-
-        if (!source.endsWith(".zip"))
-            throw new NotAZipFileToExtractException(source);
-
-        if (!File.exists(destination))
-            createNewFolder(destination);
-
-        unZip(source, destination);
+    public static void extract(java.io.File zipFile, java.io.File destination, JCompressor extractor) {
+        extractor.extract(zipFile, destination);
     }
 
     public static List<String> search(String regex, Folder folder) {
