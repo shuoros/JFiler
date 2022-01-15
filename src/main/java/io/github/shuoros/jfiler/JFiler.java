@@ -201,6 +201,10 @@ public class JFiler {
         compress(files, toCompressFile, compressor);
     }
 
+    public static void compress(java.io.File location, java.io.File compressFileDestination, JCompressor compressor) {
+        compressor.compress(List.of(location), compressFileDestination);
+    }
+
     /**
      * Compresses desired list of your files or folder into a zip file.
      *
@@ -219,7 +223,7 @@ public class JFiler {
     /**
      * Unzips your desired zip file in destination you want.
      *
-     * @param zipFile      Location of Your zip file.
+     * @param zipFile     Location of Your zip file.
      * @param destination Location of extracted files or folders from zip file to save.
      * @param extractor   Extract method.
      */
