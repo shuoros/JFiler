@@ -301,13 +301,17 @@ public class JFiler {
         Folder.create(Paths.get(location));
     }
 
+    public static Boolean isFileExist(File file) {
+        return file.exists();
+    }
+
     /**
      * Checks if your desired file or folder exist or not.
      *
      * @param location Location of file or folder which you want to check its existence.
      * @return True if file exist in drive and false if its not.
      */
-    public static boolean isFileExist(String location) {
+    public static Boolean isFileExist(String location) {
         return File.exists(location);
     }
 
