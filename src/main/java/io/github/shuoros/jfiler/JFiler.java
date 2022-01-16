@@ -168,7 +168,7 @@ public class JFiler {
      */
     public static void moveTo(String source, String destination) throws IOException {
         copyTo(source, destination);
-        delete(source);
+        deleteThe(source);
     }
 
     public static void copyTo(java.io.File source, String destination) throws IOException {
@@ -251,8 +251,8 @@ public class JFiler {
         return recursionSearch(regex, location);
     }
 
-    public static void delete(java.io.File file) throws IOException {
-        delete(file.getPath());
+    public static void deleteThe(java.io.File file) throws IOException {
+        deleteThe(file.getPath());
     }
 
     /**
@@ -262,7 +262,7 @@ public class JFiler {
      * @throws IOException If anything goes wrong in deleting your desired file or folder
      *                     an IOException will be thrown.
      */
-    public static void delete(String location) throws IOException {
+    public static void deleteThe(String location) throws IOException {
         location = pathSeparatorCorrector(location);
 
         if (File.isFile(location))
@@ -503,6 +503,12 @@ public class JFiler {
         this.clipBoard = null;
         this.copy = false;
         this.cut = false;
+    }
+
+    public void delete(String destination) throws IOException {
+        destination = InitialPreparationOfLocation(destination);
+
+        deleteThe(destination);
     }
 
     private Boolean currentLocationIsLastLocationToUp() {
