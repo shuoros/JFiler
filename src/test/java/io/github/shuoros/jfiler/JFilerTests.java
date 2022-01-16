@@ -7,6 +7,7 @@ import io.github.shuoros.jfiler.exception.NoBackwardHistoryException;
 import io.github.shuoros.jfiler.exception.NoForwardHistoryException;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
+import io.github.shuoros.jfiler.util.SystemOS;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -98,6 +99,8 @@ public class JFilerTests {
 
         // When
         JFiler.hide(file);
+        if (!SystemOS.isWindows())
+            file = openFile("JFilerCreatedSuccessfully/.file.txt");
 
         // Then
         assertTrue(file.isHidden());
@@ -107,10 +110,16 @@ public class JFilerTests {
     @Order(6)
     public void whenJFilerUnHidesAFileItMustBeVisible() throws IOException {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/file.txt");
+        File file;
+        if (SystemOS.isWindows())
+            file = openFile("JFilerCreatedSuccessfully/file.txt");
+        else
+            file = openFile("JFilerCreatedSuccessfully/.file.txt");
 
         // When
         JFiler.unHide(file);
+        if (!SystemOS.isWindows())
+            file = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // Then
         assertFalse(file.isHidden());
