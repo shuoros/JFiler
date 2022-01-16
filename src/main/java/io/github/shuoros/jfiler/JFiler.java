@@ -506,7 +506,7 @@ public class JFiler {
     }
 
     private Boolean currentLocationIsLastLocationToUp() {
-        return this.currentLocation.getPath().split("(?<!:)/").length == 1;
+        return this.currentLocation.getPath().split("(?<!:)/").length == 2;
     }
 
     private String InitialPreparationOfLocation(String location) {
