@@ -24,7 +24,7 @@ public class FileTests {
     @Order(1)
     public void openMethodMustCreateANewInstanceOfFile() {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // When
         File openedFile = File.open(file.toPath());
@@ -36,7 +36,7 @@ public class FileTests {
     @Order(2)
     public void whenAFileExistsCreateFactoryMustThrowFileAlreadyExistsException() {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // Then
         assertThrows(FileAlreadyExistsException.class, () -> File.create(file.toPath()));
@@ -46,7 +46,7 @@ public class FileTests {
     @Order(3)
     public void getTypeMethodMustActualTypeOfFile() {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // When
         Type type = file.getType();
@@ -59,7 +59,7 @@ public class FileTests {
     @Order(4)
     public void getLocationMustReturnActualLocationOfFile() {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // When
         Path path = file.getLocation();
@@ -72,7 +72,7 @@ public class FileTests {
     @Order(5)
     public void getParentLocationMustReturnActualLocationOfParentOfFile() {
         // Given
-        File file = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
         Folder folder = openFolder("JFilerCreatedSuccessfully");
 
         // When
@@ -86,8 +86,8 @@ public class FileTests {
     @Order(6)
     public void whenTwoFilesHaveSamePathTheEqualsMethodMustReturnTrue() {
         // Given
-        File file1 = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
-        File file2 = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
+        File file1 = openFile("JFilerCreatedSuccessfully/file.txt");
+        File file2 = openFile("JFilerCreatedSuccessfully/file.txt");
 
         // When
         boolean equals = file1.equals(file2);
@@ -100,8 +100,8 @@ public class FileTests {
     @Order(7)
     public void whenTwoFilesHaveNotSamePathTheEqualsMethodMustReturnFalse() {
         // Given
-        File file1 = openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt");
-        File file2 = openFile("JFilerCreatedSuccessfully/InnerFolder/InnerFolder.txt");
+        File file1 = openFile("JFilerCreatedSuccessfully/file.txt");
+        File file2 = openFile("JFilerCreatedSuccessfully/notAFile.txt");
 
         // When
         boolean equals = file1.equals(file2);

@@ -22,7 +22,6 @@ import java.util.Objects;
 public class Folder extends File {
 
     private final List<File> contains = new ArrayList<>();
-    private final Long size;
 
     /**
      * Constructs a {@link io.github.shuoros.jfiler.file.Folder} instance in your given path.
@@ -31,9 +30,10 @@ public class Folder extends File {
      */
     public Folder(Path location) {
         super(location);
-        if (super.exists())
-            extractContainedFilesAndFolders(location);
-        size = calculateFolderSize(this);
+    }
+
+    public static Folder open(String location) {
+        return open(Paths.get(location));
     }
 
     /**
@@ -44,6 +44,10 @@ public class Folder extends File {
      */
     public static Folder open(Path location) {
         return new Folder(location);
+    }
+
+    public static Folder create(String location) throws IOException {
+        return create(Paths.get(location));
     }
 
     /**
@@ -69,6 +73,8 @@ public class Folder extends File {
      * @return A list of sub files and folders in this folder.
      */
     public List<File> getContains() {
+        if (super.exists())
+            extractContainedFilesAndFolders(super.getLocation());
         return contains;
     }
 
@@ -79,7 +85,7 @@ public class Folder extends File {
      */
     @Override
     public Long getSize() {
-        return size;
+        return calculateFolderSize(this);
     }
 
     @Override
@@ -87,7 +93,6 @@ public class Folder extends File {
         return "Folder{" +
                 "name='" + super.getName() + '\'' +
                 ", location=" + super.getLocation() +
-                ", size=" + this.size + " bytes " +
                 ", created=" + super.getCreatedDate() +
                 ", lastModified=" + super.getLastModifiedDate() +
                 '}';
@@ -95,14 +100,35 @@ public class Folder extends File {
 
     private void extractContainedFilesAndFolders(Path location) {
         Arrays.stream(Objects.requireNonNull(super.list())).forEach(i -> {
-            i = location.toString() + '/' + i;
-            contains.add(new java.io.File(i).isFile() ? new File(Paths.get(i)) : new Folder(Paths.get(i)));
+            if (!skipFolder(i)) {
+                i = pathConcator(location.toString(), i);
+                contains.add(new java.io.File(i).isFile() ? new File(Paths.get(i)) : new Folder(Paths.get(i)));
+            }
         });
     }
 
     private Long calculateFolderSize(Folder folder) {
         return folder.getContains().stream()//
                 .mapToLong(file -> file.isFile() ? file.getSize() : calculateFolderSize((Folder) file)).sum();
+    }
+
+    private boolean skipFolder(String location) {
+        if (location.startsWith("$"))
+            return true;
+        if (location.equals("System Volume Information"))
+            return true;
+        return false;
+    }
+
+    private String pathConcator(String path, String location) {
+        path = pathSeparatorCorrector(path);
+        if (!path.endsWith("/"))
+            path += "/";
+        return path.concat(location);
+    }
+
+    private String pathSeparatorCorrector(String path) {
+        return path.replaceAll("\\\\", "/");
     }
 
 }

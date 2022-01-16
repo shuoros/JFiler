@@ -1,5 +1,5 @@
 <p align="center">
- <img src="https://user-images.githubusercontent.com/45015114/139809463-417377ca-2eef-4cec-9689-bd841b0ce5db.png" align="center" alt="JFiler" />
+ <img src="https://user-images.githubusercontent.com/45015114/149667480-788c34bb-a13b-4e81-93de-fe0ed9420c19.png" style="width:150px; height:150px" align="center" alt="JFiler" />
  <h2 align="center">JFiler</h2>
  <p align="center">Is a library for managing files in Java which easily and with the least line of code gives you
   the ability to manage files like moving through folders and directories, reading files and folders information,
@@ -35,7 +35,7 @@
 	If you like this project, help me by giving me a star =))<3
   </p>
 
-## What is in V1.0.0
+## What is in V1.1.0
 
 - Open JFiler in a directory and move in files and folders.
 - Lock home to limit access to just files and folders of a specific location.
@@ -49,7 +49,64 @@
 
 To use JFiler you just need to make a simple call to your desired API and JFiler will do the rest.
 
-For example:
+For example JFiler's Static APIs:
+
+```java
+import io.github.shuoros.jcompressor.compress.ZipCompressor;
+import io.github.shuoros.jfiler.JFiler;
+import io.github.shuoros.jfiler.file.File;
+
+public class Main {
+    public static void main(String[] args) {
+        File file = File.open(//
+                "/home/soroush/Desktop/test.file");
+        try {
+            // hide a file or folder
+            JFiler.hide(file);
+
+            // make a file visible
+            JFiler.unHide(file);
+
+            // rename a file or folder
+            JFiler.rename(file, "newTest.file");
+
+            // move a file or folder to a destination
+            File destination = File.open(//
+                    "/home/soroush/Desktop/newFolder/newTest.file");
+            JFiler.moveTo(file, destination);
+
+            // copy a file or folder to a destination
+            JFiler.copyTo(destination, file);
+            
+            // delete a file or folder
+            JFiler.deleteThe(destination);
+            
+            // create a new file or folder
+            JFiler.createNewFile("/home/soroush/Desktop/new.file");
+            JFiler.createNewFolder("/home/soroush/Desktop/newFolder");
+
+            // compress files or folders to zip file
+            File zipFile = File.open(//
+                    "/home/soroush/Desktop/file.zip");
+            JFiler.compress(file, zipFile, new ZipCompressor());
+
+            // extract a zip file
+            File desktop = File.open(//
+                    "/home/soroush/Desktop");
+            JFiler.extract(zipFile, desktop, new ZipCompressor());
+
+            // search for a regex in a dir
+            List<String> foundedFiles = JFiler.search(//
+                    ".txt$"//
+                    , desktop);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+For example JFiler's Home APIs:
 
 ```java
 import io.github.shuoros.jfiler.JFiler;
@@ -57,31 +114,30 @@ import io.github.shuoros.jfiler.JFiler;
 public class Main {
     public static void main(String[] args) {
         // Opens a JFiler instance in desktop
-        JFiler jFiler = JFiler.open("/home/soroush/Desktop");
+        JFiler desktop = JFiler.open("/home/soroush/Desktop");
         try {
-            // Returns list of files and folders in desktop
-            List<File> files = jFiler.getList();
-            // Hide a file/folder
-            jFiler.hide("/home/soroush/Desktop/jfiler.txt");
-            // Unhide a file/folder
-            jFiler.unHide("/home/soroush/Desktop/jfiler.txt");
-            // Rename a file/folder
-            jFiler.rename("/home/soroush/Desktop/jfiler.txt", "renamed.txt");
-            // Create a new folder
-            jFiler.createNewFolder("/home/soroush/Desktop/new folder");
-            // Move a file/folder to a new location
-            jFiler.cutTo("/home/soroush/Desktop/renamed.txt", "/home/soroush/Desktop/new folder/renamed.txt");
-            // Copy a file/folder in to a new location
-            jFiler.copyTo("/home/soroush/Desktop/new folder/renamed.txt", "/home/soroush/Desktop/jFiler.txt");
-            // Delete a file/folder
-            jFiler.delete("/home/soroush/Desktop/new folder");
-            // Zip files/folders
-            jFiler.zip("/home/soroush/Desktop/jFiler.txt", "/home/soroush/Desktop/zipped.zip");
-            // Extract a zip file
-            jFiler.unzip("/home/soroush/Desktop/zipped.zip", "/home/soroush/Desktop/extracted");
-            // Search a regex in files and folders of a directory
-            List<String> foundedFiles = jFiler.search(".txt$", "/home/soroush/Desktop");
-        } catch (Exception e){
+            // List of home's files and folders
+            List<File> listOfFiles = desktop.getList();
+            
+            // open a folder
+            desktop.openFolder("newFolder");
+            
+            // go backward
+            desktop.goBackward();
+            
+            // go forward
+            desktop.goForward();
+            
+            // go up in parent folder
+            desktop.goUp();
+            
+            // copy/cut and paste files
+            desktop.copy("/test.file");
+            desktop.paste("/newFolder/test.file");
+            
+            // delete a file
+            desktop.delete("/newFolder/test.file");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -99,7 +155,7 @@ You can use **JFiler** with any project management tool:
 <dependency>
     <groupId>io.github.shuoros</groupId>
     <artifactId>JFiler</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -107,35 +163,35 @@ You can use **JFiler** with any project management tool:
 
 ```gradle
 // https://mvnrepository.com/artifact/io.github.shuoros/JFiler
-implementation group: 'io.github.shuoros', name: 'JFiler', version: '1.0.0'
+implementation group: 'io.github.shuoros', name: 'JFiler', version: '1.1.0'
 ```
 
 Or
 
 ```gradle
 // https://mvnrepository.com/artifact/io.github.shuoros/JFiler
-implementation 'io.github.shuoros:JFiler:1.0.0'
+implementation 'io.github.shuoros:JFiler:1.1.0'
 ```
 
 And in **Kotlin**
 
 ```gradle
 // https://mvnrepository.com/artifact/io.github.shuoros/JFiler
-implementation("io.github.shuoros:JFiler:1.0.0")
+implementation("io.github.shuoros:JFiler:1.1.0")
 ```
 
 ### SBT
 
 ```sbt
 // https://mvnrepository.com/artifact/io.github.shuoros/JFiler
-libraryDependencies += "io.github.shuoros" % "JFiler" % "1.0.0"
+libraryDependencies += "io.github.shuoros" % "JFiler" % "1.1.0"
 ```
 
 ### Ivy
 
 ```xml
 <!-- https://mvnrepository.com/artifact/io.github.shuoros/JFiler -->
-<dependency org="io.github.shuoros" name="JFiler" rev="1.0.0"/>
+<dependency org="io.github.shuoros" name="JFiler" rev="1.1.0"/>
 ```
 
 ### Grape
@@ -143,7 +199,7 @@ libraryDependencies += "io.github.shuoros" % "JFiler" % "1.0.0"
 ```java
 // https://mvnrepository.com/artifact/io.github.shuoros/JFiler
 @Grapes(
-        @Grab(group = 'io.github.shuoros', module = 'JFiler', version = '1.0.0')
+        @Grab(group = 'io.github.shuoros', module = 'JFiler', version = '1.1.0')
 )
 ```
 
@@ -151,7 +207,7 @@ libraryDependencies += "io.github.shuoros" % "JFiler" % "1.0.0"
 
 ```clj
 ;; https://mvnrepository.com/artifact/io.github.shuoros/JFiler
-[io.github.shuoros/JFiler "1.0.0"]
+[io.github.shuoros/JFiler "1.1.0"]
 ```
 
 ## Authors
