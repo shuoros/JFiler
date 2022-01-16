@@ -46,6 +46,7 @@ public class FolderTests {
 
     @Test
     @Order(3)
+    @Disabled
     public void containsMethodMustReturnAllFilesOfAFolder() {
         // Given
         List<File> files;

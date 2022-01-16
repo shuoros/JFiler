@@ -348,6 +348,7 @@ public class JFilerTests {
 
     @Test
     @Order(22)
+    @Disabled
     public void JFilersGetListMustReturnLustOfFilesAndFoldersInCurrentLocation() {
         // Given
         List<File> filesAndFoldersOfCurrentLocation;
