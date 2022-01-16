@@ -4,6 +4,7 @@ import io.github.shuoros.jcompressor.JCompressor;
 import io.github.shuoros.jfiler.exception.*;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
+import io.github.shuoros.jfiler.util.JFilerUtils;
 import io.github.shuoros.jfiler.util.SystemOS;
 
 import java.io.*;
@@ -49,7 +50,7 @@ public class JFiler {
      * @param location Home of JFiler instance which going to be created.
      */
     public JFiler(String location) {
-        this.homeLocation = ("/".equals(location)) ? null : Folder.open(pathSeparatorCorrector(location));
+        this.homeLocation = ("/".equals(location)) ? null : Folder.open(JFilerUtils.pathSeparatorCorrector(location));
         this.currentLocation = this.homeLocation;
         this.copy = false;
         this.cut = false;
@@ -103,15 +104,15 @@ public class JFiler {
      *                     an IOException will be thrown.
      */
     public static void hide(String location) throws IOException {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.isHidden(location))
             throw new FileIsAlreadyHideException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
-            hideFileInUnix(location);
+            JFilerUtils.hideFileInUnix(location);
         else if (SystemOS.isWindows())
-            hideFileInWindows(location);
+            JFilerUtils.hideFileInWindows(location);
     }
 
     public static void unHide(java.io.File file) throws IOException {
@@ -128,15 +129,15 @@ public class JFiler {
      *                     an IOException will be thrown.
      */
     public static void unHide(String location) throws IOException {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.isVisible(location))
             throw new FileIsAlreadyVisibleException(location);
 
         if (SystemOS.isUnix() || SystemOS.isMac())
-            unHideFileInUnix(location);
+            JFilerUtils.unHideFileInUnix(location);
         else if (SystemOS.isWindows())
-            unHideFileInWindows(location);
+            JFilerUtils.unHideFileInWindows(location);
     }
 
     public static void rename(java.io.File file, String newName) throws IOException {
@@ -152,7 +153,7 @@ public class JFiler {
      *                     an IOException will be thrown.
      */
     public static void rename(String location, String newName) throws IOException {
-        moveTo(location, newNamedLocation(location, newName));
+        moveTo(location, JFilerUtils.newNamedLocation(location, newName));
     }
 
     public static void moveTo(java.io.File source, String destination) throws IOException {
@@ -183,13 +184,13 @@ public class JFiler {
      * @throws IOException If anything goes wrong in coping your desired file or folder an IOException will be thrown.
      */
     public static void copyTo(String source, String destination) throws IOException {
-        source = pathSeparatorCorrector(source);
-        destination = pathSeparatorCorrector(destination);
+        source = JFilerUtils.pathSeparatorCorrector(source);
+        destination = JFilerUtils.pathSeparatorCorrector(destination);
 
         if (File.isFile(source))
-            copyFile(source, destination);
+            JFilerUtils.copyFile(source, destination);
         else
-            copyFolder(source, destination);
+            JFilerUtils.copyFolder(source, destination);
     }
 
     public static void compress(List<String> locations, String compressFileDestination, JCompressor compressor) {
@@ -243,12 +244,12 @@ public class JFiler {
      * @return List of paths of files or folders which their names matches with given regex.
      */
     public static List<String> search(String regex, String location) {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.isFile(location))
             throw new CannotSearchInFileException(location);
 
-        return recursionSearch(regex, location);
+        return JFilerUtils.recursionSearch(regex, location);
     }
 
     public static void deleteThe(java.io.File file) throws IOException {
@@ -263,12 +264,12 @@ public class JFiler {
      *                     an IOException will be thrown.
      */
     public static void deleteThe(String location) throws IOException {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.isFile(location))
-            deleteFile(location);
+            JFilerUtils.deleteFile(location);
         else
-            deleteFolder(location);
+            JFilerUtils.deleteFolder(location);
     }
 
     /**
@@ -278,7 +279,7 @@ public class JFiler {
      * @throws IOException If anything goes wrong in creating a new file an IOException will be thrown.
      */
     public static void createNewFile(String location) throws IOException {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.exists(location))
             throw new FileAlreadyExistsException(location);
@@ -293,7 +294,7 @@ public class JFiler {
      * @throws IOException If anything goes wrong in creating a new folder an IOException will be thrown.
      */
     public static void createNewFolder(String location) throws IOException {
-        location = pathSeparatorCorrector(location);
+        location = JFilerUtils.pathSeparatorCorrector(location);
 
         if (File.exists(location))
             throw new FileAlreadyExistsException(location);
@@ -520,7 +521,7 @@ public class JFiler {
             location = location.substring(1);
         if (this.homeLocation != null && !location.startsWith("/"))
             location = this.homeLocation.getPath().concat("/").concat(location);
-        return pathSeparatorCorrector(location);
+        return JFilerUtils.pathSeparatorCorrector(location);
     }
 
     private boolean canNotOpenThis(String location) {
@@ -530,108 +531,6 @@ public class JFiler {
 
     private boolean canNotGoUpFromThisFolder(String location) {
         return this.homeLocation != null && location.equals(this.homeLocation.getPath());
-    }
-
-    private static void writeFromInputStreamToOutputStream(InputStream is, OutputStream os) throws IOException {
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = is.read(buffer)) > 0) {
-            os.write(buffer, 0, length);
-        }
-
-        is.close();
-        os.close();
-    }
-
-    private static void deleteFile(String location) throws IOException {
-        File file = File.open(location);
-        if (!file.delete())
-            throw new IOException(//
-                    "Failed to delete the file because: " +//
-                            getReasonForFileDeletionFailureInPlainEnglish(file));
-    }
-
-    private static String getReasonForFileDeletionFailureInPlainEnglish(File file) {
-        try {
-            if (!file.exists())
-                return "It doesn't exist in the first place.";
-            else if (file.isDirectory() && Objects.requireNonNull(file.list()).length > 0)
-                return "It's a directory and it's not empty.";
-            else
-                return "Somebody else has it open, we don't have write permissions, or somebody stole my disk.";
-        } catch (SecurityException e) {
-            return "We're sandboxed and don't have filesystem access.";
-        }
-    }
-
-    private static String newNamedLocation(String location, String newName) {
-        location = pathSeparatorCorrector(location);
-        StringBuilder newNamedLocation = new StringBuilder();
-        for (String directory : location.split("/"))
-            if (directory.equals(location.split("/")[location.split("/").length - 1]))
-                newNamedLocation.append(newName);
-            else
-                newNamedLocation.append(directory).append("/");
-
-        return newNamedLocation.toString();
-    }
-
-    private static void hideFileInUnix(String destination) throws IOException {
-        rename(destination, "." + destination.split("/")[destination.split("/").length - 1]);
-    }
-
-    private static void hideFileInWindows(String destination) throws IOException {
-        Files.setAttribute(Paths.get(destination), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
-    }
-
-    private static void unHideFileInUnix(String destination) throws IOException {
-        rename(destination, destination.split("/")[destination.split("/").length - 1]//
-                .replaceFirst(".", ""));
-    }
-
-    private static void unHideFileInWindows(String destination) throws IOException {
-        Files.setAttribute(Paths.get(destination), "dos:hidden", false, LinkOption.NOFOLLOW_LINKS);
-    }
-
-    private static String pathSeparatorCorrector(String path) {
-        return path.replaceAll("\\\\", "/");
-    }
-
-    private static void copyFolder(String source, String destination) throws IOException {
-        createNewFolder(destination);
-        for (String file : Objects.requireNonNull(new java.io.File(source).list())) {
-            if (new java.io.File(source + "/" + file).isFile())
-                copyFile(source + "/" + file, destination + "/" + file);
-            else
-                copyFolder(source + "/" + file, destination + "/" + file);
-        }
-    }
-
-    private static void copyFile(String source, String destination) throws IOException {
-        createNewFile(destination);
-        InputStream is = new FileInputStream(source);
-        OutputStream os = new FileOutputStream(destination);
-        writeFromInputStreamToOutputStream(is, os);
-    }
-
-    private static void deleteFolder(String destination) throws IOException {
-        Files.walk(Paths.get(destination))
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(java.io.File::delete);
-    }
-
-    private static List<String> recursionSearch(String regex, String destination) {
-        Folder folder = new Folder(Paths.get(destination));
-        List<String> foundedFiles = new ArrayList<>();
-        Pattern p = Pattern.compile(regex);
-        for (File file : folder.getContains()) {
-            if (p.matcher(file.getName()).find())
-                foundedFiles.add(file.getPath());
-            if (file.isDirectory())
-                foundedFiles.addAll(recursionSearch(regex, file.getPath()));
-        }
-        return foundedFiles;
     }
 
 }
