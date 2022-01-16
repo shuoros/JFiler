@@ -25,7 +25,7 @@ public class FolderTests {
     @Order(1)
     public void openMethodMustCreateANewInstanceOfFolder() {
         // Given
-        Folder folder = openFolder("JFilerCreatedSuccessfully/InnerFolder");
+        Folder folder = openFolder("JFilerCreatedSuccessfully/move");
 
         // When
         Folder openedFolder = Folder.open(folder.toPath());
@@ -37,7 +37,7 @@ public class FolderTests {
     @Order(2)
     public void whenAFolderExistsCreateFactoryMustThrowFileAlreadyExistsException() {
         // Given
-        Folder folder = openFolder("JFilerCreatedSuccessfully/InnerFolder");
+        Folder folder = openFolder("JFilerCreatedSuccessfully/move");
 
         // Then
         assertThrows(FileAlreadyExistsException.class, () -> Folder.create(folder.toPath()));
@@ -47,13 +47,8 @@ public class FolderTests {
     @Order(3)
     public void containsMethodMustReturnAllFilesOfAFolder() {
         // Given
-        List<File> files = List.of(openFolder("JFilerCreatedSuccessfully/CutCopyOperations")//
-                , openFile("JFilerCreatedSuccessfully/HiddenFile.txt")//
-                , openFile("JFilerCreatedSuccessfully/ImNotRenamed.txt")//
-                , openFolder("JFilerCreatedSuccessfully/InnerFolder")//
-                , openFile("JFilerCreatedSuccessfully/JFilerCreatedSuccessfully.txt")//
-                , openFile("JFilerCreatedSuccessfully/VisibleFile.txt")//
-                , openFolder("JFilerCreatedSuccessfully/ZipOperations"));
+        List<File> files = List.of(openFile("JFilerCreatedSuccessfully/file.txt")//
+                , openFolder("JFilerCreatedSuccessfully/move"));
         Folder folder = openFolder("JFilerCreatedSuccessfully");
 
         // Then
