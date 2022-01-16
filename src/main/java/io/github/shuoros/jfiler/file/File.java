@@ -160,8 +160,8 @@ public class File extends java.io.File {
     }
 
     @Override
-    public boolean isHidden(){
-        if(SystemOS.isWindows())
+    public boolean isHidden() {
+        if (SystemOS.isWindows())
             return super.isHidden();
         return getName().startsWith(".");
     }

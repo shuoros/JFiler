@@ -350,9 +350,15 @@ public class JFilerTests {
     @Order(22)
     public void JFilersGetListMustReturnLustOfFilesAndFoldersInCurrentLocation() {
         // Given
-        List<File> filesAndFoldersOfCurrentLocation = List.of(//
-                openFile("JFilerCreatedSuccessfully/file.txt"), //
-                openFolder("JFilerCreatedSuccessfully/move"));
+        List<File> filesAndFoldersOfCurrentLocation;
+        if (SystemOS.isWindows())
+            filesAndFoldersOfCurrentLocation = List.of(//
+                    openFile("JFilerCreatedSuccessfully/file.txt"), //
+                    openFolder("JFilerCreatedSuccessfully/move"));
+        else
+            filesAndFoldersOfCurrentLocation = List.of(//
+                    openFolder("JFilerCreatedSuccessfully/move"), //
+                    openFile("JFilerCreatedSuccessfully/file.txt"));
 
         // Then
         assertEquals(filesAndFoldersOfCurrentLocation, jFiler.getList());
