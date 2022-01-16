@@ -463,7 +463,7 @@ public class JFiler {
      *
      * @param source Location of your desired file or folder you want to cut.
      */
-    public void Cut(String source) {
+    public void cut(String source) {
         source = InitialPreparationOfLocation(source);
 
         this.clipBoard = File.open(source);
