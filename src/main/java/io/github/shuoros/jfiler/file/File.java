@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
@@ -35,6 +36,10 @@ public class File extends java.io.File {
         this.type = super.isFile() ? Type.type(super.getName().substring(super.getName().lastIndexOf('.') + 1)) : Type.Folder;
     }
 
+    public static File open(String location) {
+        return open(Paths.get(location));
+    }
+
     /**
      * Creates a new instance of {@link io.github.shuoros.jfiler.file.File} for you.
      *
@@ -43,6 +48,10 @@ public class File extends java.io.File {
      */
     public static File open(Path location) {
         return new File(location);
+    }
+
+    public static File create(String location) throws IOException {
+        return create(Paths.get(location));
     }
 
     /**
@@ -62,6 +71,37 @@ public class File extends java.io.File {
         return file;
     }
 
+    public static Boolean exists(String location) {
+        return exists(Paths.get(location));
+    }
+
+    public static Boolean exists(Path location) {
+        return location.toFile().exists();
+    }
+
+    public static Boolean isFile(String location) {
+        return isFile(Paths.get(location));
+    }
+
+    public static Boolean isFile(Path location) {
+        return location.toFile().isFile();
+    }
+
+    public static Boolean isVisible(String location) {
+        return !isHidden(location);
+    }
+
+    public static Boolean isVisible(Path location) {
+        return !isHidden(location);
+    }
+
+    public static Boolean isHidden(String location) {
+        return isHidden(Paths.get(location));
+    }
+
+    public static Boolean isHidden(Path location) {
+        return location.toFile().isHidden();
+    }
 
     /**
      * Gets type of file.

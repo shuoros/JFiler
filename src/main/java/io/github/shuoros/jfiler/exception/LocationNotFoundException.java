@@ -9,10 +9,10 @@ package io.github.shuoros.jfiler.exception;
  * @see java.lang.RuntimeException
  * @since 1.0.0
  */
-public class HomeIsLockedException extends RuntimeException {
+public class LocationNotFoundException extends RuntimeException {
 
-    public HomeIsLockedException() {
-        super("You can't go back any further, Because the home is locked!");
+    public LocationNotFoundException(String location) {
+        super(location);
     }
 
 }
