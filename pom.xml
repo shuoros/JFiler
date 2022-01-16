@@ -6,7 +6,7 @@
 
     <groupId>io.github.shuoros</groupId>
     <artifactId>JFiler</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A library for managing files in Java.</description>
     <url>https://github.com/shuoros/JFiler</url>
@@ -38,7 +38,7 @@
         <connection>scm:git:git://github.com/shuoros/JFiler.git</connection>
         <developerConnection>scm:git:ssh://github.com:shuoros/JFiler.git</developerConnection>
         <url>https://github.com/shuoros/JFiler/tree/main</url>
-        <tag>v1.0.0</tag>
+        <tag>v1.1.0</tag>
     </scm>
 
     <issueManagement>
