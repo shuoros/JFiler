@@ -2,6 +2,10 @@
 
 ## next release
 
+## 1.1.0 (2021-01-16)
+### New Features
+- same old features but in a new API architecture.
+
 ## 1.0.0 (2021-12-29)
 ### New Features
 - Open JFiler in a directory and move in files and folders.
