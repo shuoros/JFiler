@@ -1,5 +1,7 @@
 package io.github.shuoros.jfiler.file;
 
+import io.github.shuoros.jfiler.util.SystemOS;
+
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -155,6 +157,13 @@ public class File extends java.io.File {
      */
     public Date getLastModifiedDate() {
         return lastModifiedDate;
+    }
+
+    @Override
+    public boolean isHidden() {
+        if (SystemOS.isWindows())
+            return super.isHidden();
+        return getName().startsWith(".");
     }
 
     /**
