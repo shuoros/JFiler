@@ -343,7 +343,7 @@ public class JFilerTests {
         // Given
         List<File> filesAndFoldersOfCurrentLocation = List.of(//
                 openFile("JFilerCreatedSuccessfully/file.txt"), //
-                openFile("JFilerCreatedSuccessfully/move"));
+                openFolder("JFilerCreatedSuccessfully/move"));
 
         // Then
         assertEquals(filesAndFoldersOfCurrentLocation, jFiler.getList());
