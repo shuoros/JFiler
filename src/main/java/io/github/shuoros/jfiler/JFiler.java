@@ -320,7 +320,7 @@ public class JFiler {
      *
      * @return An instance of Folder which represent the home.
      */
-    public Folder getHomeLocation() {
+    public Folder getHome() {
         return homeLocation;
     }
 
@@ -330,7 +330,7 @@ public class JFiler {
      *
      * @return An instance of Folder which represent the current location of JFiler.
      */
-    public Folder getCurrentLocation() {
+    public Folder getCurrent() {
         return currentLocation;
     }
 
@@ -340,7 +340,7 @@ public class JFiler {
      *
      * @return An instance of Folder which represent the rear location of JFiler.
      */
-    public Folder getRearLocation() {
+    public Folder getRear() {
         return rearLocation.peek();
     }
 
@@ -350,7 +350,7 @@ public class JFiler {
      *
      * @return An instance of Folder which represent the front location of JFiler.
      */
-    public Folder getFrontLocation() {
+    public Folder getFront() {
         return frontLocation.peek();
     }
 
@@ -371,7 +371,7 @@ public class JFiler {
      * @return A string that indicates the operation that the track is about to perform.
      * It can be a copy or a cut or NaN.
      */
-    public String getPasteOperation() {
+    public String pasteOperation() {
         if (copy)
             return "copy";
         if (cut)
@@ -423,6 +423,7 @@ public class JFiler {
     public void goBackward() {
         if (this.rearLocation.isEmpty())
             throw new NoBackwardHistoryException();
+
         this.frontLocation.push(this.currentLocation);
         this.currentLocation = this.rearLocation.pop();
     }
@@ -436,6 +437,7 @@ public class JFiler {
     public void goForward() {
         if (this.frontLocation.isEmpty())
             throw new NoForwardHistoryException();
+
         this.rearLocation.push(this.currentLocation);
         this.currentLocation = this.frontLocation.pop();
     }
@@ -461,7 +463,7 @@ public class JFiler {
      *
      * @param source Location of your desired file or folder you want to cut.
      */
-    public void move(String source) {
+    public void Cut(String source) {
         source = InitialPreparationOfLocation(source);
 
         this.clipBoard = File.open(source);
@@ -508,6 +510,8 @@ public class JFiler {
     }
 
     private String InitialPreparationOfLocation(String location) {
+        if (location.startsWith("/"))
+            location = location.substring(1);
         if (this.homeLocation != null && !location.startsWith("/"))
             location = this.homeLocation.getPath().concat("/").concat(location);
         return pathSeparatorCorrector(location);
@@ -515,7 +519,7 @@ public class JFiler {
 
     private boolean canNotOpenThis(String location) {
         return (this.homeLocation == null && !File.exists(location)) //
-                || (this.homeLocation != null && !File.exists(this.homeLocation.getPath().concat(location)));
+                || (this.homeLocation != null && !File.exists(location));
     }
 
     private boolean canNotGoUpFromThisFolder(String location) {
