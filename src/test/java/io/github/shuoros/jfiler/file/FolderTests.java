@@ -1,6 +1,7 @@
 package io.github.shuoros.jfiler.file;
 
 import io.github.shuoros.jfiler.JFilerTests;
+import io.github.shuoros.jfiler.util.SystemOS;
 import org.junit.jupiter.api.*;
 
 import java.nio.file.FileAlreadyExistsException;
@@ -47,8 +48,15 @@ public class FolderTests {
     @Order(3)
     public void containsMethodMustReturnAllFilesOfAFolder() {
         // Given
-        List<File> files = List.of(openFile("JFilerCreatedSuccessfully/file.txt")//
-                , openFolder("JFilerCreatedSuccessfully/move"));
+        List<File> files;
+        if (SystemOS.isWindows())
+            files = List.of(//
+                    openFile("JFilerCreatedSuccessfully/file.txt"), //
+                    openFolder("JFilerCreatedSuccessfully/move"));
+        else
+            files = List.of(//
+                    openFolder("JFilerCreatedSuccessfully/move"), //
+                    openFile("JFilerCreatedSuccessfully/file.txt"));
         Folder folder = openFolder("JFilerCreatedSuccessfully");
 
         // Then
