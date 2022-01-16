@@ -2,6 +2,9 @@ package io.github.shuoros.jfiler;
 
 import io.github.shuoros.jcompressor.compress.ZipCompressor;
 import io.github.shuoros.jfiler.exception.CannotSearchInFileException;
+import io.github.shuoros.jfiler.exception.LocationNotFoundException;
+import io.github.shuoros.jfiler.exception.NoBackwardHistoryException;
+import io.github.shuoros.jfiler.exception.NoForwardHistoryException;
 import io.github.shuoros.jfiler.file.File;
 import io.github.shuoros.jfiler.file.Folder;
 import org.junit.jupiter.api.*;
@@ -45,7 +48,7 @@ public class JFilerTests {
         jFiler = JFiler.open();
 
         // Then
-        assertNull(jFiler.getHomeLocation());
+        assertNull(jFiler.getHome());
     }
 
     @Test
@@ -55,7 +58,7 @@ public class JFilerTests {
         Folder folder = openFolder("JFilerCreatedSuccessfully");
 
         // When
-        Folder home = jFiler.getHomeLocation();
+        Folder home = jFiler.getHome();
 
         // Then
         assertEquals(folder, home);
@@ -119,6 +122,8 @@ public class JFilerTests {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/file.txt");
         File newFile = openFile("JFilerCreatedSuccessfully/newFile.txt");
+        assertTrue(file.exists());
+        assertFalse(newFile.exists());
 
         // When
         JFiler.rename(file, newFile.getName());
@@ -137,6 +142,8 @@ public class JFilerTests {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/file.txt");
         File movedFile = openFile("JFilerCreatedSuccessfully/move/file.txt");
+        assertTrue(file.exists());
+        assertFalse(movedFile.exists());
 
         // When
         JFiler.moveTo(file, movedFile.getPath());
@@ -152,6 +159,8 @@ public class JFilerTests {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/move/file.txt");
         File copiedFile = openFile("JFilerCreatedSuccessfully/file.txt");
+        assertTrue(file.exists());
+        assertFalse(copiedFile.exists());
 
         // When
         JFiler.copyTo(file, copiedFile.getPath());
@@ -165,9 +174,10 @@ public class JFilerTests {
     public void whenJFilerDeletesAFileItMustBeDeleted() throws IOException {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/move/file.txt");
+        assertTrue(file.exists());
 
         // When
-        JFiler.delete(file);
+        JFiler.deleteThe(file);
 
         // Then
         assertFalse(file.exists());
@@ -179,6 +189,7 @@ public class JFilerTests {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/file.txt");
         File zippedFile = openFile("JFilerCreatedSuccessfully/zipFile.zip");
+        assertFalse(zippedFile.exists());
 
         // When
         JFiler.compress(file, zippedFile, new ZipCompressor());
@@ -194,6 +205,7 @@ public class JFilerTests {
         File zipFile = openFile("JFilerCreatedSuccessfully/zipFile.zip");
         File extractedFile = openFile("JFilerCreatedSuccessfully/move/file.txt");
         Folder extractDestination = openFolder("JFilerCreatedSuccessfully/move");
+        assertFalse(extractedFile.exists());
 
         // When
         JFiler.extract(zipFile, extractDestination, new ZipCompressor());
@@ -202,7 +214,8 @@ public class JFilerTests {
         assertTrue(extractedFile.exists());
 
         // After
-        JFiler.delete(extractedFile);
+        JFiler.deleteThe(zipFile);
+        JFiler.deleteThe(extractedFile);
     }
 
     @Test
@@ -248,6 +261,7 @@ public class JFilerTests {
     public void whenJFilerCreatesNewFileItMustBeCreated() throws IOException {
         // Given
         File file = openFile("JFilerCreatedSuccessfully/newFile.txt");
+        assertFalse(file.exists());
 
         // When
         JFiler.createNewFile(file.getPath());
@@ -256,7 +270,7 @@ public class JFilerTests {
         assertTrue(file.exists());
 
         // After
-        JFiler.delete(file);
+        JFiler.deleteThe(file);
     }
 
     @Test
@@ -275,6 +289,7 @@ public class JFilerTests {
     public void whenJFilerCreatesNewFolderItMustBeCreated() throws IOException {
         // Given
         Folder folder = openFolder("JFilerCreatedSuccessfully/newFolder");
+        assertFalse(folder.exists());
 
         // When
         JFiler.createNewFolder(folder.getPath());
@@ -283,7 +298,7 @@ public class JFilerTests {
         assertTrue(folder.exists());
 
         // After
-        JFiler.delete(folder);
+        JFiler.deleteThe(folder);
     }
 
     @Test
@@ -310,6 +325,224 @@ public class JFilerTests {
 
         // Then
         assertFalse(exist);
+    }
+
+    @Test
+    @Order(21)
+    public void whenAJFilerInstanceCreatedTheCurrentLocationMustBeInHomeLocation() {
+        // Given
+        Folder currentLocation = jFiler.getCurrent();
+
+        // Then
+        assertEquals(currentLocation, jFiler.getHome());
+    }
+
+    @Test
+    @Order(22)
+    public void JFilersGetListMustReturnLustOfFilesAndFoldersInCurrentLocation() {
+        // Given
+        List<File> filesAndFoldersOfCurrentLocation = List.of(//
+                openFile("JFilerCreatedSuccessfully/file.txt"), //
+                openFile("JFilerCreatedSuccessfully/move"));
+
+        // Then
+        assertEquals(filesAndFoldersOfCurrentLocation, jFiler.getList());
+    }
+
+    @Test
+    @Order(23)
+    public void whenJFilersOpensAFolderThatFolderMustBeSetToCurrentLocation() {
+        // Given
+        Folder newCurrentLocation = openFolder("JFilerCreatedSuccessfully/move");
+
+        // When
+        jFiler.openFolder("/move");
+
+        // Then
+        assertEquals(newCurrentLocation, jFiler.getCurrent());
+    }
+
+    @Test
+    @Order(24)
+    public void whenJFilerOpensAFolderCurrentLocationMustBeSetToRearLocation() {
+        // Given
+        Folder oldCurrentLocation = jFiler.getCurrent();
+
+        // When
+        jFiler.openFolder("/move");
+
+        // Then
+        assertEquals(oldCurrentLocation, jFiler.getRear());
+    }
+
+    @Test
+    @Order(25)
+    public void whenJFilerGoesBackwardIfThereIsNoRearLocationItMustThrowNoBackwardHistoryException() {
+        assertThrows(NoBackwardHistoryException.class, () -> //
+                jFiler.goBackward());
+    }
+
+    @Test
+    @Order(26)
+    public void whenJFilerOpensAFolderAndThenGoesBackWardTheCurrentLocationMustBeLastRearLocation() {
+        // Given
+        jFiler.openFolder("/move");
+        Folder lastRearLocation = jFiler.getRear();
+
+        // When
+        jFiler.goBackward();
+
+        // Then
+        assertEquals(lastRearLocation, jFiler.getCurrent());
+    }
+
+    @Test
+    @Order(27)
+    public void whenJFilerGoesForwardIfThereIsNoFrontLocationItMustThrowNoForwardHistoryException() {
+        assertThrows(NoForwardHistoryException.class, () -> //
+                jFiler.goForward());
+    }
+
+    @Test
+    @Order(28)
+    public void whenJFilerOpensAFolderAndThenGoesBackWardAndThenGoesForwardTheCurrentLocationMustBeLastFrontLocation() {
+        // Given
+        jFiler.openFolder("/move");
+        jFiler.goBackward();
+        Folder lastFrontLocation = jFiler.getFront();
+
+        // When
+        jFiler.goForward();
+
+        // Then
+        assertEquals(lastFrontLocation, jFiler.getCurrent());
+    }
+
+    @Test
+    @Order(29)
+    public void whenJFilerOpensInRootGoUpMethodMustThrowLocationNotFoundException() {
+        // Given
+        jFiler = JFiler.open();
+
+        // Then
+        assertThrows(LocationNotFoundException.class, () -> //
+                jFiler.goUp());
+    }
+
+    @Test
+    @Order(30)
+    public void whenJFilerIsInItsHomeLocationGoUpMethodMustThrowLocationNotFoundException() {
+        assertThrows(LocationNotFoundException.class, () -> //
+                jFiler.goUp());
+    }
+
+    @Test
+    @Order(31)
+    public void whenJFilerOpensAFolderWhenItGoesUpTheCurrentLocationMustBeParentOfCurrentLocation() {
+        // Given
+        jFiler.openFolder("/move");
+        Folder parentOfCurrentLocation = openFolder("JFilerCreatedSuccessfully");
+
+        // When
+        jFiler.goUp();
+
+        // Then
+        assertEquals(parentOfCurrentLocation, jFiler.getCurrent());
+    }
+
+    @Test
+    @Order(32)
+    public void whenJFilerCutsAFileOrFolderThePasteOperationMustSetToPASTE() {
+        // When
+        jFiler.cut("/file.txt");
+
+        // Then
+        assertEquals("cut", jFiler.pasteOperation());
+    }
+
+    @Test
+    @Order(33)
+    public void whenJFilerCopiesAFileOrFolderThePasteOperationMustSetToPASTE() {
+        // When
+        jFiler.copy("/file.txt");
+
+        // Then
+        assertEquals("copy", jFiler.pasteOperation());
+    }
+
+    @Test
+    @Order(34)
+    public void whenJFilerCutsAFileOrFolderThatFileOrFolderMustSetToClipBoard() {
+        // Given
+        File cutedFile = openFile("JFilerCreatedSuccessfully/file.txt");
+
+        // When
+        jFiler.cut("/file.txt");
+
+        // Then
+        assertEquals(cutedFile, jFiler.getClipBoard());
+    }
+
+    @Test
+    @Order(35)
+    public void whenJFilerCopiesAFileOrFolderThatFileOrFolderMustSetToClipBoard() {
+        // Given
+        File copiedFile = openFile("JFilerCreatedSuccessfully/file.txt");
+
+        // When
+        jFiler.copy("/file.txt");
+
+        // Then
+        assertEquals(copiedFile, jFiler.getClipBoard());
+    }
+
+    @Test
+    @Order(36)
+    public void whenJFilerCutsAFileThePasteMethodMustCutItInToDestination() throws IOException {
+        // Given
+        File file = openFile("JFilerCreatedSuccessfully/file.txt");
+        File movedFile = openFile("JFilerCreatedSuccessfully/move/file.txt");
+        assertTrue(file.exists());
+        assertFalse(movedFile.exists());
+
+        // When
+        jFiler.cut("/file.txt");
+        jFiler.paste("/move/file.txt");
+
+        // Then
+        assertTrue(movedFile.exists());
+        assertFalse(file.exists());
+    }
+
+    @Test
+    @Order(37)
+    public void whenJFilerCopiesAFileThePasteMethodMustCopyItInToDestination() throws IOException {
+        // Given
+        File file = openFile("JFilerCreatedSuccessfully/move/file.txt");
+        File copiedFile = openFile("JFilerCreatedSuccessfully/file.txt");
+        assertTrue(file.exists());
+        assertFalse(copiedFile.exists());
+
+        // When
+        jFiler.copy("/move/file.txt");
+        jFiler.paste("/file.txt");
+
+        // Then
+        assertTrue(copiedFile.exists());
+    }
+
+    @Test
+    @Order(38)
+    public void whenJFilerDeletesAFileOrFolderItMustBeDeleted() throws IOException {
+        // Given
+        File deletedFile = openFile("JFilerCreatedSuccessfully/move/file.txt");
+        assertTrue(deletedFile.exists());
+
+        // When
+        jFiler.delete("/move/file.txt");
+
+        // Then
+        assertFalse(deletedFile.exists());
     }
 
     private JFiler openJFiler(String location) {
