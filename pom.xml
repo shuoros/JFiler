@@ -38,7 +38,7 @@
         <connection>scm:git:git://github.com/shuoros/JFiler.git</connection>
         <developerConnection>scm:git:ssh://github.com:shuoros/JFiler.git</developerConnection>
         <url>https://github.com/shuoros/JFiler/tree/main</url>
-        <tag>v0.0.1</tag>
+        <tag>v1.1.0</tag>
     </scm>
 
     <issueManagement>
